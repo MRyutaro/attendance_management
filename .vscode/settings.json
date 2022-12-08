@@ -2,6 +2,8 @@
   // ファイル保存時のフォーマット処理を有効化する
   "editor.formatOnSave": true,
 
+  "eslint.workingDirectories": ["./frontend"],
+
   // 各ファイルのフォーマッターを指定する
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
