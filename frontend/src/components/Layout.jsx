@@ -8,8 +8,10 @@ const Layout = ({ children }) => {
   return (
     <>
       <Meta />
-      <Sidebar />
-      <main>{children}</main>
+      <div className="flex ">
+        <Sidebar />
+        <main className="w-4/5">{children}</main>
+      </div>
       <Footer />
     </>
   );

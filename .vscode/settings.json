@@ -1,4 +1,7 @@
 {
+  "editor.quickSuggestions": {
+    "strings": true
+  },
   // ファイル保存時のフォーマット処理を有効化する
   "editor.formatOnSave": true,
 
