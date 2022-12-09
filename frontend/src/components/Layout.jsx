@@ -1,18 +1,15 @@
-import React from "react";
-
-import Footer from "./Footer";
-import Meta from "./Meta";
-import Sidebar from "./Sidebar";
+import Main from "@/components/Main";
+import Meta from "@/components/Meta";
+import Sidebar from "@/components/Sidebar";
 
 const Layout = ({ children }) => {
   return (
     <>
-      <Meta />
-      <div className="flex ">
+      <Meta pageTitle="Home"></Meta>
+      <div className="flex flex-wrap">
         <Sidebar />
-        <main className="w-4/5">{children}</main>
+        <Main>{children}</Main>
       </div>
-      <Footer />
     </>
   );
 };
