@@ -1,5 +1,6 @@
 import Meta from "@/components/Meta";
 import Sidebar from "@/components/Sidebar";
+import Main from "./Main";
 
 const Layout = ({ children }) => {
   return (
@@ -7,9 +8,7 @@ const Layout = ({ children }) => {
       <Meta></Meta>
       <div className="flex flex-wrap">
         <Sidebar />
-        <main>
-          <div className="h-full ml-14 md:ml-64 w-3/4 ">{children}</div>
-        </main>
+        <Main>{children}</Main>
       </div>
     </>
   );
