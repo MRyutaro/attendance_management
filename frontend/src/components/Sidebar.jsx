@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import ApplicationIcon from "../../public/application.svg";
-import HomeIcon from "../../public/home.svg";
-import LogoutIcon from "../../public/logout.svg";
-import MonthlyIcon from "../../public/monthly.svg";
-import ProfileIcon from "../../public/profile.svg";
-import SettingIcon from "../../public/setting.svg";
+import ApplicationIcon from "public/application.svg";
+import HomeIcon from "public/home.svg";
+import LogoutIcon from "public/logout.svg";
+import MonthlyIcon from "public/monthly.svg";
+import ProfileIcon from "public/profile.svg";
+import SettingIcon from "public/setting.svg";
 
 const Sidebar = () => {
   return (
