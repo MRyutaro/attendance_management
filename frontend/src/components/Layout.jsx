@@ -5,10 +5,12 @@ import Sidebar from "@/components/Sidebar";
 const Layout = ({ children }) => {
   return (
     <>
-      <Meta pageTitle="Home"></Meta>
+      <Meta></Meta>
       <div className="flex flex-wrap">
         <Sidebar />
-        <Main>{children}</Main>
+        <main>
+          <div className="h-full ml-14 md:ml-64 w-3/4 ">{children}</div>
+        </main>
       </div>
     </>
   );
