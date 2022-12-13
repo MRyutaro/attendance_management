@@ -1,4 +1,3 @@
-import Main from "@/components/Main";
 import Meta from "@/components/Meta";
 import Sidebar from "@/components/Sidebar";
 
