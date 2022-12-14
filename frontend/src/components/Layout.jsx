@@ -1,15 +1,17 @@
 import Meta from "@/components/Meta";
 import Sidebar from "@/components/Sidebar";
-import Main from "./Main";
+import Container from "./Container";
 
 const Layout = ({ children }) => {
   return (
     <>
       <Meta></Meta>
-      <div className="flex flex-wrap">
-        <Sidebar />
-        <Main>{children}</Main>
-      </div>
+      <main>
+        <div className="flex flex-wrap">
+          <Sidebar />
+          <Container>{children}</Container>
+        </div>
+      </main>
     </>
   );
 };

@@ -10,9 +10,9 @@ import SettingIcon from "public/setting.svg";
 
 const Sidebar = () => {
   return (
-    <div className=" flex flex-col top-0 left-0 w-14 hover:w-[240px] md:w-[200px] bg-[radial-gradient(circle_at_bottom_right,#3c9add,#6a007a)]  h-screen text-white transition-all duration-300 border-none z-10 sidebar">
+    <div className=" static flex flex-col top-0 left-0 w-14 hover:w-[240px] md:w-[200px] bg-[radial-gradient(circle_at_bottom_right,#3c9add,#6a007a)]  h-screen text-white transition-all duration-300 border-none z-10 sidebar">
       <div className="overflow-y-auto overflow-x-hidden flex flex-col justify-between flex-grow">
-        <ul className="flex flex-col py-4 space-y-1">
+        <ul className="flex flex-col space-y-1">
           <li className="hidden md:block py-10 ">
             <div className="flex  items-center justify-start w-14 md:w-full ">
               <div className="ml-5">
