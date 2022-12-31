@@ -110,7 +110,7 @@ const Sidebar = () => {
           </li>
         </ul>
         <div className="mb-14 px-5 py-3 hidden md:block text-center focus:outline-none hover:bg-blue-800 dark:hover:bg-gray-600 hover:text-white-800 border-l-4 border-transparent hover:border-blue-500 dark:hover:border-gray-800">
-          <Link href="#" className="flex items-center mr-4 hover:text-blue-100">
+          <Link href="/login" className="flex items-center mr-4 hover:text-blue-100">
             <span className="inline-flex mr-1">
               <LogoutIcon />
             </span>
