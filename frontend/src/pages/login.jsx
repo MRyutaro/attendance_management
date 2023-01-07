@@ -22,7 +22,7 @@ export default function Profile() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="Email or Username"
                 />        
               </div>
@@ -37,7 +37,7 @@ export default function Profile() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="Password"
                 />
               </div>
@@ -62,10 +62,10 @@ export default function Profile() {
                 Login
               </button>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="justify-between">
               <div className="text-sm">
               <p>Don't have an account?</p>
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                <a href="#" className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500">
                   Sing Up
                 </a>
               </div>
