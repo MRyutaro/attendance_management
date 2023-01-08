@@ -12,10 +12,10 @@ const Time = () => {
   }, [date]);
 
   return (
-    <div className="clock">
+    <div className="clock flex">
       <span>{day}</span>
       <br></br>
-      <span className="mt-5" suppressHydrationWarning={true}>
+      <span className="ml-10" suppressHydrationWarning={true}>
         {time}
       </span>
     </div>
