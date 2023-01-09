@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import './App.css'
-import Logout from './Logout/Logout';
-import Login from './Login/Login';
+import './styles/globals.css';
+import Logout from './pages/Logout';
+import Login from './pages/Logins';
 
 class App extends Component {
     constructor(props) {
