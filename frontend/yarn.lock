@@ -1030,15 +1030,27 @@
   dependencies:
     "preact" "~10.12.1"
 
-"@fullcalendar/daygrid@^6.0.2":
+"@fullcalendar/daygrid@^6.0.2", "@fullcalendar/daygrid@~6.1.5":
   "integrity" "sha512-wXQUNPOyEQ1FEHVdtxP/tLcAAGwY4zeFejujhcznhKC751X8voInF+7kFmI7GDTVgX9cd72Muku3c+gHi8ygEQ=="
   "resolved" "https://registry.npmjs.org/@fullcalendar/daygrid/-/daygrid-6.1.5.tgz"
+  "version" "6.1.5"
+
+"@fullcalendar/list@^6.1.5":
+  "integrity" "sha512-Z34h32ZuI0+sU6GdV2WrXnF6Z17VvsagjSBY+8/bMrMHfDoLbT76sGfoI6N0GCAr7aW9N2NgWWz8kuQw9uFAZQ=="
+  "resolved" "https://registry.npmjs.org/@fullcalendar/list/-/list-6.1.5.tgz"
   "version" "6.1.5"
 
 "@fullcalendar/react@^6.0.2":
   "integrity" "sha512-OVQJQhtDAwxHbFk84bm5Y6iGLjGDrrBgr3491JbfnqHUjSaO+T1rNHUvtnot0X4/ZdnoxWr2nKqxPxpmCCL/lw=="
   "resolved" "https://registry.npmjs.org/@fullcalendar/react/-/react-6.1.5.tgz"
   "version" "6.1.5"
+
+"@fullcalendar/timegrid@^6.1.5":
+  "integrity" "sha512-phofe7XQ+JbejQB9zGqtZOGmPr/vMkfkK5dwPY4rOjxZOG/wspL3aXoSurmXaVP5CIiRWBvX9QPq0UgVJt0j5A=="
+  "resolved" "https://registry.npmjs.org/@fullcalendar/timegrid/-/timegrid-6.1.5.tgz"
+  "version" "6.1.5"
+  dependencies:
+    "@fullcalendar/daygrid" "~6.1.5"
 
 "@humanwhocodes/config-array@^0.11.6":
   "integrity" "sha512-kBbPWzN8oVMLb0hOUYXhmxggL/1cJE6ydvjDIGi9EnAGUyA7cLVKQg+d/Dsm+KZwx2czGHrCmMVLiyg8s5JPKw=="
