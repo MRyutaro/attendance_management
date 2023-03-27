@@ -45,7 +45,9 @@ const Sidebar = () => {
               <span className="inline-flex w-5 h-5 justify-center items-center ml-4 ">
                 <HomeIcon />
               </span>
-              <span className="ml-2 text-sm tracking-wide truncate">HOME</span>
+              <span className="ml-2 text-sm tracking-wide truncate">
+                ホーム
+              </span>
             </Link>
           </li>
           <li>
@@ -57,7 +59,7 @@ const Sidebar = () => {
                 <MonthlyIcon />
               </span>
               <span className="ml-2 text-sm tracking-wide truncate">
-                Monthly
+                月別一覧
               </span>
             </Link>
           </li>
@@ -70,14 +72,14 @@ const Sidebar = () => {
                 <ApplicationIcon />
               </span>
               <span className="ml-2 text-sm tracking-wide truncate">
-                Application
+                打刻申請
               </span>
             </Link>
           </li>
           <li className="px-5 hidden md:block">
             <div className="flex flex-row items-center mt-5 h-8">
               <div className="text-sm font-light tracking-wide text-gray-400 uppercase">
-                Settings
+                Setting
               </div>
             </div>
           </li>
@@ -90,7 +92,7 @@ const Sidebar = () => {
                 <ProfileIcon />
               </span>
               <span className="ml-2 text-sm tracking-wide truncate">
-                Profile
+                個人設定
               </span>
             </Link>
           </li>
@@ -102,9 +104,7 @@ const Sidebar = () => {
               <span className="inline-flex justify-center items-center ml-4">
                 <SettingIcon />
               </span>
-              <span className="ml-2 text-sm tracking-wide truncate">
-                Settings
-              </span>
+              <span className="ml-2 text-sm tracking-wide truncate">設定</span>
             </Link>
           </li>
         </ul>
