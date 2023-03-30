@@ -1,5 +1,7 @@
-import Layout from "@/components/Layout";
+import React from "react";
 
-export default function Application() {
-  return <Layout />;
-}
+const Application = () => {
+  return <div>Application</div>;
+};
+
+export default Application;
