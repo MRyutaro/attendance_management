@@ -49,7 +49,7 @@ export default function Profile({ query }) {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                <a href="/Forgotpass" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
                 </a>
               </div>
@@ -69,7 +69,7 @@ export default function Profile({ query }) {
             <div className="justify-between">
               <div className="text-sm">
                 <p>Do not have an account?</p>
-                <a href="#" className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500">
+                <a href="Singup" className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500">
                   Sing Up
                 </a>
               </div>
