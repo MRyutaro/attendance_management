@@ -27,7 +27,7 @@ export default function Profile({ query }) {
                   autoComplete="password1"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="新しいパスワード"
+                  placeholder="New password"
                 />
               </div>
               <br></br>
@@ -42,7 +42,7 @@ export default function Profile({ query }) {
                   autoComplete="current-password"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="確認用パスワード"
+                  placeholder="Check password"
                 />
               </div>
             </div>
@@ -55,7 +55,7 @@ export default function Profile({ query }) {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <div className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
                 </span>
-                更新
+                Change
               </button>
             </div>
             <div className="justify-between">
