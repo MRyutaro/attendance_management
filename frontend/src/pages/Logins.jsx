@@ -4,7 +4,7 @@ const Logins = () => {
   return (
     <div className="Logins">
       <h2>Login</h2>
-      <h3>ログイン成功！おめでとう</h3>
+      <h3>ログインしました</h3>
     </div>
   );
 };

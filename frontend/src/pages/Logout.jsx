@@ -4,7 +4,7 @@ const Logout = () => {
   return (
     <div className="Logout">
       <h2>Logout</h2>
-      <h3>またログインしてね</h3>
+      <h3>ログアウトしました</h3>
     </div>
   );
 };
