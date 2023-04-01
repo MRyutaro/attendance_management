@@ -5,9 +5,7 @@ export default function Profile() {
       <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              ログイン
-            </h2>
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">ログイン</h2>
           </div>
           <form className="mt-8 space-y-6" action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
@@ -45,10 +43,7 @@ export default function Profile() {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <a
-                  href="#"
-                  className="font-medium text-indigo-600 hover:text-indigo-500"
-                >
+                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
                 </a>
               </div>
@@ -60,10 +55,7 @@ export default function Profile() {
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <div
-                    className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-                    aria-hidden="true"
-                  />
+                  <div className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
                 </span>
                 Login
               </button>
@@ -71,10 +63,7 @@ export default function Profile() {
             <div className="justify-between">
               <div className="text-sm">
                 <p>Do not have an account?</p>
-                <a
-                  href="#"
-                  className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500"
-                >
+                <a href="#" className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500">
                   Sing Up
                 </a>
               </div>

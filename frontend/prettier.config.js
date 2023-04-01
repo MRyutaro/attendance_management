@@ -1,5 +1,5 @@
 module.exports = {
-  printWidth: 80, // 1行で表示する文字数
+  printWidth: 200, // 1行で表示する文字数
   tabWidth: 2, // インデントのサイズ
   useTabs: false, // インデントにスペースの代わりにタブを使うかどうか
   semi: true, // 文の後にセミコロンを付けるかどうか
@@ -10,4 +10,5 @@ module.exports = {
   bracketSpacing: true, // オブジェクトリテラルの{}内の前後にスペースを入れるかどうか
   bracketSameLine: false, // JSX内の要素の閉じタグを最後の行に含んで表示するか
   arrowParens: "always", // アロー関数の引数が１つのときにカッコで囲むかどうか
+  htmlWhitespaceSensitivity: "ignore", // HTMLの空白を認識するかどうか
 };

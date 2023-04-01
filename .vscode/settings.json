@@ -28,12 +28,7 @@
   "stylelint.validate": ["css", "scss"],
 
   // ESLintの対象を設定
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
 
   // 保存時に実行される各コードアクションを有効化する
   "editor.codeActionsOnSave": {
@@ -46,5 +41,7 @@
   "css.validate": false,
   "scss.validate": false,
   "javascript.format.enable": false,
-  "typescript.format.enable": false
+  "typescript.format.enable": false,
+  "prettier.printWidth": 200,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
