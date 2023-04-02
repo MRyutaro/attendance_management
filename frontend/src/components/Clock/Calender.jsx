@@ -28,7 +28,7 @@ const Calender = () => {
         </div>
       </div>
 
-      <div className="table w-full p-2">
+      <div className="table w-full mt-5">
         <table className="w-full border">
           <thead>
             <tr className="bg-gray-50 border-b">

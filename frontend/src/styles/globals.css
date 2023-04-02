@@ -83,3 +83,8 @@ a {
 .none {
   display: none;
 }
+
+table th,
+table td {
+  padding: 10px;
+}
