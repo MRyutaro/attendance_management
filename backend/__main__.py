@@ -17,7 +17,7 @@ def read_api():
 
 
 @app.get("/api/companies")
-def read_companies():
+def get_companies():
     # dataディレクトリの中のフォルダ名を取得する
     companies = [
         int(d) for d in os.listdir("../data")
@@ -27,7 +27,7 @@ def read_companies():
 
 
 @app.get("/api/companies/{company_id}")
-def read_company(company_id: int):
+def get_company(company_id: int):
     # data/001/info.jsonからデータを取得する
     with open(f"../data/{company_id}/info.json", "r") as f:
         company_info = json.load(f)
@@ -38,7 +38,7 @@ def read_company(company_id: int):
 
 
 @app.get("/api/companies/{company_id}/employees")
-def read_employees(company_id: int):
+def get_employees(company_id: int):
     with open(f"../data/{company_id}/info.json", "r") as f:
         employees = json.load(f)["employees"]
     return {
@@ -48,7 +48,7 @@ def read_employees(company_id: int):
 
 
 @app.get("/api/companies/{company_id}/employees/{employee_id}")
-def read_employee(company_id: int, employee_id: int):
+def get_employee(company_id: int, employee_id: int):
     with open(f"../data/{company_id}/{employee_id}/info.json", "r") as f:
         employees = json.load(f)
     # ../data/1/1/monthly_data/の中のファイル名の拡張子を除いたものを取得する
