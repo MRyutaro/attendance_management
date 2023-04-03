@@ -18,7 +18,7 @@ export default function Monthly() {
                   <svg
                     fill="none"
                     height="24"
-                    shape-rendering="geometricPrecision"
+                    shapeRendering="geometricPrecision"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -43,7 +43,7 @@ export default function Monthly() {
                   <svg
                     fill="none"
                     height="24"
-                    shape-rendering="geometricPrecision"
+                    shapeRendering="geometricPrecision"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -69,7 +69,7 @@ export default function Monthly() {
                   <svg
                     fill="none"
                     height="24"
-                    shape-rendering="geometricPrecision"
+                    shapeRendering="geometricPrecision"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"

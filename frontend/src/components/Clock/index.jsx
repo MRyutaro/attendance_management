@@ -54,7 +54,7 @@ const Clock = () => {
 
   return (
     <>
-      <div className="flex justify-around items-center ">
+      <div className="flex justify-around  ">
         <div className="flex justify-around flex-col items-center">
           <div className="flex items-center  text-xl">
             <p className="digit">{date}</p>
@@ -99,6 +99,50 @@ const Clock = () => {
                 </span>
               )}
             </p>
+          </div>
+        </div>
+      </div>
+      <div className="">
+        <div className="bg-gray-100 flex p-4 mt-5">
+          <section aria-labelledby="open-tickets-tabs-label" className="mr-4 focus:outline-none">
+            <label id="open-tickets-tabs-label" className="font-semibold block mb-1 text-sm text-left">
+              打刻状況
+            </label>
+            <ul className="flex">
+              <li>
+                <button className="focus:outline-none focus:bg-yellow-200 p-2 rounded-l-md  border-r-0 bg-white flex flex-col items-center w-24">
+                  <p className="font-semibold text-lg">6</p>
+                  <p className="text-sm uppercase text-gray-600">打刻漏れ</p>
+                </button>
+              </li>
+              <li>
+                <button className="focus:outline-none focus:bg-yellow-200 p-2  bg-white flex flex-col items-center w-24 cursor-pointer">
+                  <p className="font-semibold text-lg">3</p>
+                  <p className="text-sm uppercase text-gray-600">未申請</p>
+                </button>
+              </li>
+
+              <li>
+                <button className="focus:outline-none focus:bg-yellow-200 p-2  rounded-r-md bg-white flex flex-col items-center w-24 cursor-pointer">
+                  <p className="font-semibold text-lg">15</p>
+                  <p className="text-sm uppercase text-gray-600">打刻済み</p>
+                </button>
+              </li>
+            </ul>
+          </section>
+          <div className="flex w-full  gap-y-2">
+            <div className="w-full h-[150px] rounded-xl border border-gray-200 bg-white py-4 px-2 shadow-md shadow-gray-100">
+              <div className="flex items-center justify-between px-2 text-base font-medium text-gray-700">
+                <p>打刻エラー</p>
+              </div>
+              <div className="mt-2">
+                <div className="flex max-h-[100px] w-full flex-col overflow-y-scroll">
+                  <div className="flex flex-col items-start justify-between font-light text-gray-600">
+                    <a className="font-light">2023/04/10 打刻漏れあります。修正してください</a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
