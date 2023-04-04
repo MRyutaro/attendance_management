@@ -6,7 +6,9 @@ from models import Models
 
 app = FastAPI()
 models = Models()
+
 api_root = "/api/v1"
+port = 8000
 
 
 @app.get("/")
@@ -112,9 +114,15 @@ def get_my_monthly_work_records(company_id: int, employee_id: int, year: int, mo
 
 # 勤怠の修正を申請する
 @app.post(api_root + "/companies/{company_id}/employees/{employee_id}/monthly_work_records/{year}/{month}/request_correction")
-def request_correction(company_id: int, employee_id: int, year: int, month: int, correction_reason: str):
+def request_correction(company_id: int, employee_id: int, year: int, month: int, correction_contents: str):
     # add: request_correction_id
-    return models.request_correction(company_id, employee_id, year, month, correction_reason)
+    return models.request_correction(company_id, employee_id, year, month, correction_contents)
+
+
+# 勤怠の修正の申請記録を取得する
+@app.get(api_root + "/companies/{company_id}/employees/{employee_id}/monthly_work_records/{year}/{month}/reqyest_corrections")
+def get_my_monthly_request_corrections(company_id: int, employee_id: int, year: int, month: int):
+    return models.get_my_monthly_work_records(company_id, employee_id, year, month)
 
 
 # 有給の依頼を出す
@@ -156,12 +164,12 @@ def download_monthly_work_records(company_id: int, employee_id: int, year: int, 
     return models.download_monthly_work_records(company_id, employee_id, year, month)
 
 
-# 従業員の勤怠の修正記録を取得する
+# 従業員の勤怠の修正依頼を取得する
 @app.get(api_root + "/companies/{company_id}/monthly_work_records/{year}/{month}/correction_records")
 def get_correction_requests(company_id: int, year: int, month: int):
     # add: クエリパラメータで従業員のidを指定できるようにする
     # add: クエリパラメータで承認されていないものだけを取得するようにする
-    return models.get_correction_records(company_id, year, month)
+    return models.get_correction_requests(company_id, year, month)
 
 
 # 従業員の勤怠を修正する
@@ -209,9 +217,9 @@ def set_remaining_paid_leaves_days(company_id: int, remaining_paid_leaves_days: 
 @app.put(api_root + "/companies/{company_id}/paid_leaves_records/remaining_days")
 def update_remaining_paid_leaves_days(company_id: int, remaining_paid_leaves_days: int):
     return models.update_remaining_paid_leaves_days(company_id, remaining_paid_leaves_days)
+
+
 # 従業員の有給の依頼を承認する
-
-
 @app.post(api_root + "/companies/{company_id}/paid_leaves_records/{paid_leave_record_id}/approve")
 def approve_paid_leave(company_id: int, paid_leave_record_id: int):
     return models.approve_paid_leave(company_id, paid_leave_record_id)
@@ -224,4 +232,4 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=8000)
+    uvicorn.run(app, port=port)
