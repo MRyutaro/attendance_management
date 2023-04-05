@@ -5,7 +5,6 @@ import HomeIcon from "public/home.svg";
 import LogoutIcon from "public/logout.svg";
 import MonthlyIcon from "public/monthly.svg";
 import ProfileIcon from "public/profile.svg";
-import SettingIcon from "public/setting.svg";
 
 const Sidebar = () => {
   return (
@@ -74,17 +73,6 @@ const Sidebar = () => {
                 <ProfileIcon />
               </span>
               <span className="ml-2 text-sm tracking-wide truncate">個人設定</span>
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/Setting"
-              className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-blue-800 dark:hover:bg-gray-600 text-white-600 hover:text-white-800 border-l-4 border-transparent hover:border-blue-500 dark:hover:border-gray-800 pr-6"
-            >
-              <span className="inline-flex justify-center items-center ml-4">
-                <SettingIcon />
-              </span>
-              <span className="ml-2 text-sm tracking-wide truncate">設定</span>
             </Link>
           </li>
         </ul>

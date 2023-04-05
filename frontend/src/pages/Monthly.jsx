@@ -1,11 +1,8 @@
-// import dayGridPlugin from "@fullcalendar/daygrid";
-// import FullCalendar from "@fullcalendar/react";
+import React from "react";
 
 import Calender from "../components/Clock/Calender";
 
-// const events = [{ title: "出勤", start: new Date() }];
-
-export default function Monthly() {
+const Monthly = () => {
   return (
     <>
       <div className="mx-auto px-5 bg-white min-h-sceen">
@@ -18,7 +15,7 @@ export default function Monthly() {
                   <svg
                     fill="none"
                     height="24"
-                    shape-rendering="geometricPrecision"
+                    shapeRendering="geometricPrecision"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -43,7 +40,7 @@ export default function Monthly() {
                   <svg
                     fill="none"
                     height="24"
-                    shape-rendering="geometricPrecision"
+                    shapeRendering="geometricPrecision"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -69,7 +66,7 @@ export default function Monthly() {
                   <svg
                     fill="none"
                     height="24"
-                    shape-rendering="geometricPrecision"
+                    shapeRendering="geometricPrecision"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -94,25 +91,7 @@ export default function Monthly() {
 
       <Calender />
     </>
-
-    //   <div>
-    //     <h1>Monthly</h1>
-    //     <FullCalendar
-    //       plugins={[dayGridPlugin]}
-    //       initialView="dayGridMonth"
-    //       weekends={false}
-    //       events={events}
-    //       eventContent={renderEventContent}
-    //     />
-    //   </div>
   );
-}
+};
 
-// function renderEventContent(eventInfo) {
-//   return (
-//     <>
-//       <b>{eventInfo.timeText}</b>
-//       <i>{eventInfo.event.title}</i>
-//     </>
-//   );
-// }
+export default Monthly;
