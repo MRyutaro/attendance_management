@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 
-export default function Profile({ query }) {
+export default function Singup({ query }) {
   const router = useRouter();
   const clickHandler = () => {
     router.push('/','home')
