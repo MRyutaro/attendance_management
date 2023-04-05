@@ -37,8 +37,8 @@ def get_company(company_id: int):
 
 
 @app.put(api_root + "/companies/{company_id}")
-def update_company(company_id: int, company_name: str, company_email: str, company_login_password: str):
-    return models.update_company(company_id, company_name, company_email, company_login_password)
+def update_company(company_id: int, company_name: str, company_email: str, old_company_login_password: str, new_company_login_password: str):
+    return models.update_company(company_id, company_name, company_email, old_company_login_password, new_company_login_password)
 
 
 # 従業員を追加する
