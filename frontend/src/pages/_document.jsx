@@ -1,35 +1,21 @@
-import { createGetInitialProps } from "@mantine/next";
 import Document, { Head, Html, Main, NextScript } from "next/document";
 
 import { siteMeta } from "../lib/constants";
 
-const getInitialProps = createGetInitialProps();
+const { siteTitle, siteIcon } = siteMeta;
 
-const { siteIcon } = siteMeta;
-interface SiteMeta {
-  siteTitle: string;
-  siteIcon: string;
-}
-
-interface MetaProps {
-  pageTitle?: string;
-  siteMeta: SiteMeta;
-}
-
-const Meta: React.FC<MetaProps> = ({ pageTitle, siteMeta }) => {
-  const { siteTitle } = siteMeta;
+const PageTitle = ({ pageTitle }) => {
   const title = pageTitle ? `${pageTitle} | ${siteTitle}` : siteTitle;
   return <title>{title}</title>;
 };
 
-export default class _Document extends Document {
-  static getInitialProps = getInitialProps;
-
+export default class MyDocument extends Document {
   render() {
+    const { pageTitle } = this.props;
     return (
       <Html>
         <Head>
-          <Meta siteMeta={siteMeta} />
+          <PageTitle pageTitle={pageTitle} />
           <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
           <link rel="icon" href={siteIcon} />
         </Head>
