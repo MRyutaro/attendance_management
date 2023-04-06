@@ -1,19 +1,6 @@
 version: "3"
 
 services:
-    api:
-        container_name: api
-        build:
-            context: ./backend
-            dockerfile: Dockerfile
-        ports:
-            - "8000:8000"
-        volumes:
-            - ./backend:/usr/src
-        depends_on:
-            - db
-        command: python api.py
-
     frontend:
         container_name: frontend
         build:
@@ -26,7 +13,18 @@ services:
         depends_on:
             - api
         command: npm run dev
-
+    api:
+        container_name: api
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./backend:/usr/src
+        depends_on:
+            - db
+        command: python api.py
     db:
         container_name: db
         image: postgres:15.2
@@ -35,4 +33,4 @@ services:
         environment:
             POSTGRES_PASSWORD: password
             POSTGRES_USER: user
-            POSTGRES_DB: db
+            POSTGRES_DB: attendance_management_db
