@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const Login = ({ query }) => {
+const Login = () => {
   const router = useRouter();
 
   const clickHandler = () => {

@@ -18,7 +18,7 @@ const Profile = () => {
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="namesetting" className="sr-only">
-                namesetting
+                  namesetting
                 </label>
                 <input
                   id="namesetting"
@@ -33,7 +33,7 @@ const Profile = () => {
               <br></br>
               <div>
                 <label htmlFor="staffemail" className="sr-only">
-                staffemail
+                  staffemail
                 </label>
                 <input
                   id="staffemail"

@@ -12,17 +12,7 @@ const Monthly = () => {
               <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
                 <span>労働日数</span>
                 <span className="transition group-open:rotate-180">
-                  <svg
-                    fill="none"
-                    height="24"
-                    shapeRendering="geometricPrecision"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -37,17 +27,7 @@ const Monthly = () => {
               <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
                 <span>労働時間</span>
                 <span className="transition group-open:rotate-180">
-                  <svg
-                    fill="none"
-                    height="24"
-                    shapeRendering="geometricPrecision"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -63,17 +43,7 @@ const Monthly = () => {
               <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
                 <span> 残休暇日数</span>
                 <span className="transition group-open:rotate-180">
-                  <svg
-                    fill="none"
-                    height="24"
-                    shapeRendering="geometricPrecision"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>

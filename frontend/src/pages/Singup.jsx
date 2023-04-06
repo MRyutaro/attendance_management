@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import React from "react";
 
-const Singup = ({ query }) => {
+const Singup = () => {
   const router = useRouter();
   const clickHandler = () => {
     router.push("/", "home");
