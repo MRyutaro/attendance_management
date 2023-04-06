@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 
-<<<<<<< HEAD
+<<<<<<<<< Temporary merge branch 1
 export default function Forgotpass({ query }) {
-=======
+=========
 const Forgotpass = ({ query }) => {
->>>>>>> 82835e3927644c25183a6da221b0f8c591bffb90
+>>>>>>>>> Temporary merge branch 2
   const router = useRouter();
   const clickHandler = () => {
     router.push("/", "home");

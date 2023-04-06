@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-<<<<<<< HEAD
-export default function Login({ query }) {
-=======
 const Login = ({ query }) => {
->>>>>>> 82835e3927644c25183a6da221b0f8c591bffb90
   const router = useRouter();
 
   const clickHandler = () => {

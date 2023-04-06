@@ -1,11 +1,7 @@
 import { useRouter } from "next/router";
 import React from "react";
 
-<<<<<<< HEAD
-export default function Singup({ query }) {
-=======
 const Singup = ({ query }) => {
->>>>>>> 82835e3927644c25183a6da221b0f8c591bffb90
   const router = useRouter();
   const clickHandler = () => {
     router.push("/", "home");
