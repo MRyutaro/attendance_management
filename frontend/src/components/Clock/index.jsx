@@ -61,7 +61,9 @@ const Clock = () => {
             <p className="ml-2">({weekday})</p>
           </div>
 
-          <p className="text-6xl font-bold">{time}</p>
+          <p suppressHydrationWarning className="text-6xl font-bold">
+            {time}
+          </p>
         </div>
         <div className="flex flex-col">
           <div className="flex flex-row justify-start items-center md:items-start md:justify-around  ">
