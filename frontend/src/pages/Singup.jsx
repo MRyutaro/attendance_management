@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import React from "react";
 
-const Singup = ({ query }) => {
+const Singup = () => {
   const router = useRouter();
   const clickHandler = () => {
     router.push("/", "home");
@@ -15,7 +15,7 @@ const Singup = ({ query }) => {
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">新規登録</h2>
           </div>
           <form className="mt-8 space-y-6" action="#" method="POST">
-            <input type="hidden" name="remember" defaultValue="true" />
+            <input type="hidden" name="remember" />
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="password1" className="sr-only">

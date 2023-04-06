@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 
-function Profile({ query }) {
+function Profile() {
   const router = useRouter();
   const clickHandler = () => {
-    router.push('/','home')
-  }
+    router.push("/", "home");
+  };
   return (
     <>
       {}
@@ -14,11 +14,11 @@ function Profile({ query }) {
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">プロフィール設定画面</h2>
           </div>
           <form className="mt-8 space-y-6" action="#" method="POST">
-            <input type="hidden" name="remember" defaultValue="true" />
+            <input type="hidden" name="remember" />
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="name" className="sr-only">
-                name
+                  name
                 </label>
                 <input
                   id="name"
@@ -33,7 +33,7 @@ function Profile({ query }) {
               <br></br>
               <div>
                 <label htmlFor="email" className="sr-only">
-                address
+                  address
                 </label>
                 <input
                   id="email"
@@ -48,7 +48,8 @@ function Profile({ query }) {
             </div>
 
             <div>
-              <button onClick={clickHandler}
+              <button
+                onClick={clickHandler}
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
@@ -59,8 +60,7 @@ function Profile({ query }) {
               </button>
             </div>
             <div className="justify-between">
-              <div className="text-sm">
-              </div>
+              <div className="text-sm"></div>
             </div>
           </form>
         </div>
