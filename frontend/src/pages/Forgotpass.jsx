@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 
-const Forgotpass = ({ query }) => {
+const Forgotpass = () => {
   const router = useRouter();
   const clickHandler = () => {
     router.push("/", "home");
