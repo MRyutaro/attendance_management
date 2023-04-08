@@ -1,11 +1,8 @@
-// import dayGridPlugin from "@fullcalendar/daygrid";
-// import FullCalendar from "@fullcalendar/react";
+import React from "react";
 
 import Calender from "../components/Clock/Calender";
 
-// const events = [{ title: "出勤", start: new Date() }];
-
-export default function Monthly() {
+const Monthly = () => {
   return (
     <>
       <div className="mx-auto px-5 bg-white min-h-sceen">
@@ -15,17 +12,7 @@ export default function Monthly() {
               <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
                 <span>労働日数</span>
                 <span className="transition group-open:rotate-180">
-                  <svg
-                    fill="none"
-                    height="24"
-                    shape-rendering="geometricPrecision"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -40,17 +27,7 @@ export default function Monthly() {
               <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
                 <span>労働時間</span>
                 <span className="transition group-open:rotate-180">
-                  <svg
-                    fill="none"
-                    height="24"
-                    shape-rendering="geometricPrecision"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -66,17 +43,7 @@ export default function Monthly() {
               <summary className="flex justify-between items-center font-medium cursor-pointer list-none">
                 <span> 残休暇日数</span>
                 <span className="transition group-open:rotate-180">
-                  <svg
-                    fill="none"
-                    height="24"
-                    shape-rendering="geometricPrecision"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.5"
-                    viewBox="0 0 24 24"
-                    width="24"
-                  >
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24">
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -94,25 +61,7 @@ export default function Monthly() {
 
       <Calender />
     </>
-
-    //   <div>
-    //     <h1>Monthly</h1>
-    //     <FullCalendar
-    //       plugins={[dayGridPlugin]}
-    //       initialView="dayGridMonth"
-    //       weekends={false}
-    //       events={events}
-    //       eventContent={renderEventContent}
-    //     />
-    //   </div>
   );
-}
+};
 
-// function renderEventContent(eventInfo) {
-//   return (
-//     <>
-//       <b>{eventInfo.timeText}</b>
-//       <i>{eventInfo.event.title}</i>
-//     </>
-//   );
-// }
+export default Monthly;

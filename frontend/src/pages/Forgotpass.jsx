@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 
-export default function Profile({ query }) {
+const Forgotpass = () => {
   const router = useRouter();
   const clickHandler = () => {
-    router.push('/','home')
-  }
+    router.push("/", "home");
+  };
   return (
     <>
       {}
@@ -18,7 +18,7 @@ export default function Profile({ query }) {
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="password1" className="sr-only">
-                password1
+                  password1
                 </label>
                 <input
                   id="password1"
@@ -48,7 +48,8 @@ export default function Profile({ query }) {
             </div>
 
             <div>
-              <button onClick={clickHandler}
+              <button
+                onClick={clickHandler}
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
@@ -59,12 +60,13 @@ export default function Profile({ query }) {
               </button>
             </div>
             <div className="justify-between">
-              <div className="text-sm">
-              </div>
+              <div className="text-sm"></div>
             </div>
           </form>
         </div>
       </div>
     </>
   );
-}
+};
+
+export default Forgotpass;
