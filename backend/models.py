@@ -3,6 +3,7 @@ emailもしくは会社idと従業員idで一意に識別できるようにす�
 パスワードはハッシュ化して保存する
 """
 import psycopg2
+import time
 
 
 class Models():
@@ -13,6 +14,100 @@ class Models():
         self.password = "password"
         self.user = "user"
         self.database = "db"
+        # fix: 接続できるまで繰り返す
+        try:
+            conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                password=self.password,
+                user=self.user,
+                database=self.database
+            )
+            conn.close()
+        except psycopg2.OperationalError:
+            # 数秒待って再接続
+            sleep_time = 5
+            print(f"postgresqlに接続できませんでした。{sleep_time}秒後に再接続します。")
+            time.sleep(sleep_time)
+            conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                password=self.password,
+                user=self.user,
+                database=self.database
+            )
+            conn.close()
+        self.create_tables()
+
+    def create_tables(self):
+        # テーブルを作成する
+        conn = psycopg2.connect(
+            host=self.host,
+            port=self.port,
+            password=self.password,
+            user=self.user,
+            database=self.database
+        )
+        with conn:
+            with conn.cursor() as cursor:
+                # 会社テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS companies (\
+                company_id SERIAL PRIMARY KEY, company_name VARCHAR(30),\
+                company_email VARCHAR(30), company_login_password VARCHAR(30))"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # 従業員テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS employees (\
+                employee_id SERIAL PRIMARY KEY, company_id INTEGER,\
+                FOREIGN KEY (company_id) REFERENCES companies(company_id),\
+                employee_name VARCHAR(30), employee_email VARCHAR(30),\
+                authority_code INTEGER, employee_login_password VARCHAR(30))"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # 勤怠記録テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS work_records (\
+                work_record_id SERIAL PRIMARY KEY, employee_id INTEGER,\
+                FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                work_year INTEGER, work_month INTEGER,\
+                work_date DATE, day_of_the_week VARCHAR(30), work_status VARCHAR(30),\
+                start_work_at TIME, finish_work_at TIME, start_break_at TIME, finish_break_at TIME,\
+                start_overwork_at TIME, finish_overwork_at TIME,\
+                workplace VARCHAR(30), work_contents VARCHAR(50))"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # 勤怠修正依頼テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS correction_requests (\
+                    correction_id SERIAL PRIMARY KEY, employee_id INTEGER,\
+                    FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                    correction_date TIMESTAMP, correction_contents VARCHAR(50),\
+                    request_date TIMESTAMP, status INTEGER,\
+                    confirmed_at TIMESTAMP, confirmed_by INTEGER,\
+                    FOREIGN KEY (confirmed_by) REFERENCES employees(employee_id),\
+                    reject_reason VARCHAR(50))"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # 有休記録テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS paid_leaves_recodes (\
+                    paid_leave_id SERIAL PRIMARY KEY, employee_id INTEGER,\
+                    FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                    paid_leave_date TIMESTAMP, paid_leaves_code INTEGER,\
+                    request_date TIMESTAMP, status INTEGER,\
+                    confirmed_at TIMESTAMP, confirmed_by INTEGER,\
+                    FOREIGN KEY (confirmed_by) REFERENCES employees(employee_id),\
+                    reject_reason VARCHAR(50))"
+                cursor.execute(sql)
+            with conn.cursor() as cursor:
+                # 有休日数テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS paid_leaves_days (\
+                employee_id INTEGER,\
+                FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                year INTEGER, max_paid_leaves_days INTEGER,\
+                used_paid_leaves_days INTEGER, remaining_paid_leaves_days INTEGER)"
+                cursor.execute(sql)
 
     ######################################################################################
     # ここから管理者用
@@ -70,9 +165,23 @@ class Models():
             "company_login_password": "*******",
         }
 
-    def add_employee(self, company_id, employee_name):
+    def add_employee(self, company_id, employee_name, authority_code):
         # 社員を追加する
         # add: idは自動で振られる
+        conn = psycopg2.connect(
+            host=self.host,
+            port=self.port,
+            password=self.password,
+            user=self.user,
+            database=self.database
+        )
+        with conn:
+            with conn.cursor() as cursor:
+                # 社員を追加する
+                sql = "INSERT INTO employees (company_id, employee_name, authority_code) VALUES (%s, %s, %s)"
+                cursor.execute(sql)
+            # コミットしてトランザクション実行
+            conn.commit()
         return {
             "employee_id": 1,
             "employee_name": employee_name,
@@ -115,6 +224,11 @@ class Models():
 
     def get_correction_requests(self, company_id, year, month):
         # 月ごとの修正依頼を取得する
+        '''
+        SELECT *
+        FROM correction_records
+        WHERE EXTRACT(YEAR FROM correction_request_date) = 2022;
+        '''
         return {
             "year": year,
             "month": month,

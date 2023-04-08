@@ -13,6 +13,15 @@ services:
         depends_on:
             - api
         command: npm run dev
+    db:
+        container_name: db
+        image: postgres:15.2
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_PASSWORD: password
+            POSTGRES_USER: user
+            POSTGRES_DB: db
     api:
         container_name: api
         build:
@@ -25,12 +34,3 @@ services:
         depends_on:
             - db
         command: python api.py
-    db:
-        container_name: db
-        image: postgres:15.2
-        ports:
-            - "5432:5432"
-        environment:
-            POSTGRES_PASSWORD: password
-            POSTGRES_USER: user
-            POSTGRES_DB: attendance_management_db
