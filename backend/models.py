@@ -2,12 +2,17 @@
 emailもしくは会社idと従業員idで一意に識別できるようにする
 パスワードはハッシュ化して保存する
 """
+import psycopg2
 
 
 class Models():
     def __init__(self):
-        # データベースの接続情報を取得する
-        pass
+        # postgresqlに接続する
+        self.host = "db"
+        self.port = 5432
+        self.password = "password"
+        self.user = "user"
+        self.database = "db"
 
     ######################################################################################
     # ここから管理者用
@@ -16,6 +21,27 @@ class Models():
         # 会社を追加する
         # add: ハッシュ化したパスワードをデータベースに保存する
         # add: *で隠して、文字数だけ返す
+        conn = psycopg2.connect(
+            host=self.host,
+            port=self.port,
+            password=self.password,
+            user=self.user,
+            database=self.database
+        )
+        with conn:
+            with conn.cursor() as cursor:
+                # テーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS companies (company_id SERIAL PRIMARY KEY, company_name VARCHAR(30), company_email VARCHAR(30), company_login_password VARCHAR(30))"
+                cursor.execute(sql)
+            # コミットしてトランザクション実行
+            conn.commit()
+            with conn.cursor() as cursor:
+                # レコードを挿入
+                sql = "INSERT INTO companies (company_name, company_email, company_login_password) VALUES (%s, %s, %s)"
+                cursor.execute(sql, (company_name, company_email, company_login_password))
+            # コミットしてトランザクション実行
+            conn.commit()
+
         return {
             "company_id": 1,
             "company_name": company_name,
