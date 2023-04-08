@@ -43,8 +43,8 @@ def update_company(company_id: int, company_name: str, company_email: str, old_c
 
 # 従業員を追加する
 @app.post(api_root + "/companies/{company_id}/employees")
-def add_employee(company_id: int, employee_email: str):
-    return models.add_employee(company_id, employee_email)
+def add_employee(company_id: int, employee_email: str, authority_code: int):
+    return models.add_employee(company_id, employee_email, authority_code)
 
 
 # 全従業員の情報を取得する
