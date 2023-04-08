@@ -9,7 +9,7 @@ services:
         ports:
             - "3000:3000"
         volumes:
-            - /frontend:/usr/src
+            - ./frontend:/usr/src
         depends_on:
             - api
         command: npm run dev
