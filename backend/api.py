@@ -37,14 +37,14 @@ def get_company(company_id: int):
 
 
 @app.put(api_root + "/companies/{company_id}")
-def update_company(company_id: int, company_name: str, company_email: str, old_company_login_password: str, new_company_login_password: str):
+def update_company(company_id: int, company_name: str = "", company_email: str = "", old_company_login_password: str = "", new_company_login_password: str = ""):
     return models.update_company(company_id, company_name, company_email, old_company_login_password, new_company_login_password)
 
 
 # 従業員を追加する
 @app.post(api_root + "/companies/{company_id}/employees")
-def add_employee(company_id: int, employee_email: str, authority_code: int):
-    return models.add_employee(company_id, employee_email, authority_code)
+def add_employee(company_id: int, employee_email: str, authority: str):
+    return models.add_employee(company_id, employee_email, authority)
 
 
 # 全従業員の情報を取得する
@@ -134,7 +134,6 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int, reject_reason:
 # 新規登録する
 @app.post(api_root + "/signup")
 def signup(company_id: int, employee_id: int, employee_email: str, employee_name: str, employee_login_password: str):
-    # fix: 社員情報の型でやり取りする
     return models.signup(company_id, employee_id, employee_email, employee_name, employee_login_password)
 
 

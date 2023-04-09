@@ -2,45 +2,47 @@
 emailもしくは会社idと従業員idで一意に識別できるようにする
 パスワードはハッシュ化して保存する
 """
-import psycopg2
+
+import random
+import string
 import time
+
+import psycopg2
 
 
 class Models():
     def __init__(self):
         # postgresqlに接続する
-        self.host = "db"
-        self.port = 5432
-        self.password = "password"
-        self.user = "user"
-        self.database = "db"
+        # fix: 環境変数から取得する
+        MODE = "dev"
+        if MODE == "dev":
+            self.host = "localhost"
+            self.port = 5432
+            self.password = "1028"
+            self.user = "postgres"
+            self.database = "db"
+        elif MODE == "prod":
+            self.host = "db"
+            self.port = 5432
+            self.password = "password"
+            self.user = "user"
+            self.database = "db"
         # fix: 接続できるまで繰り返す
         try:
-            conn = psycopg2.connect(
-                host=self.host,
-                port=self.port,
-                password=self.password,
-                user=self.user,
-                database=self.database
-            )
-            conn.close()
+            with self.get_connection():
+                print("postgresqlに接続しました。")
+                pass
         except psycopg2.OperationalError:
             # 数秒待って再接続
             sleep_time = 5
             print(f"postgresqlに接続できませんでした。{sleep_time}秒後に再接続します。")
             time.sleep(sleep_time)
-            conn = psycopg2.connect(
-                host=self.host,
-                port=self.port,
-                password=self.password,
-                user=self.user,
-                database=self.database
-            )
-            conn.close()
-        self.create_tables()
+            with self.get_connection():
+                pass
+        self.create_companies_tables()
 
-    def create_tables(self):
-        # テーブルを作成する
+    def get_connection(self):
+        # データベースに接続する
         conn = psycopg2.connect(
             host=self.host,
             port=self.port,
@@ -48,66 +50,139 @@ class Models():
             user=self.user,
             database=self.database
         )
-        with conn:
+        return conn
+
+    def execute_query(self, sql, params=None):
+        """
+        SQL文を実行する関数
+
+        Parameters
+        ----------
+        sql : str
+            SQL文
+        params : tuple
+            SQL文に埋め込むパラメータ
+
+        Returns
+        -------
+        None
+        """
+        data = []
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(sql, params)
+                    # もしSELECT文だったら、結果を返す
+                    if sql.startswith("SELECT"):
+                        data = cursor.fetchall()
+                conn.commit()
+        except psycopg2.Error as e:
+            print(f"クエリの実行に失敗しました: {e}")
+        return data
+
+    def create_companies_tables(self):
+        # テーブルを作成する
+        with self.get_connection() as conn:
             with conn.cursor() as cursor:
                 # 会社テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS companies (\
                 company_id SERIAL PRIMARY KEY, company_name VARCHAR(30),\
-                company_email VARCHAR(30), company_login_password VARCHAR(30))"
+                company_email VARCHAR(30) UNIQUE, company_login_password VARCHAR(30),\
+                UNIQUE (company_id, company_email))"
+                cursor.execute(sql)
+            conn.commit()
+
+    def create_other_tables(self):
+        # テーブルを作成する
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                # day_of_the_weekのenumを作成
+                sql = "CREATE TYPE DAY_OF_THE_WEEK AS ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # work_statusのenumを作成
+                sql = "CREATE TYPE WORK_STATUS AS ENUM ('DAY_OFF', 'WORKDAY', 'HOLIDAY', 'PAID_LEAVE')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # workpalceのenumを作成
+                sql = "CREATE TYPE WORKPLACE AS ENUM ('OFFICE', 'HOME', 'OTHER')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # statusのenumを作成
+                sql = "CREATE TYPE STATUS AS ENUM ('REQUESTED', 'CONFIRMED', 'REJECTED')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # authorityのenumを作成
+                sql = "CREATE TYPE AUTHORITY AS ENUM ('ADMIN', 'USER')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
+                # カレンダーテーブルを作成
+                sql = "CREATE TABLE IF NOT EXISTS calendars (\
+                company_id INTEGER,\
+                FOREIGN KEY (company_id) REFERENCES companies(company_id),\
+                date TIMESTAMP, day_of_the_week DAY_OF_THE_WEEK,\
+                work_status WORK_STATUS,\
+                PRIMARY KEY (company_id, date))"
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 従業員テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS employees (\
-                employee_id SERIAL PRIMARY KEY, company_id INTEGER,\
+                employee_id SERIAL, company_id INTEGER,\
                 FOREIGN KEY (company_id) REFERENCES companies(company_id),\
                 employee_name VARCHAR(30), employee_email VARCHAR(30),\
-                authority_code INTEGER, employee_login_password VARCHAR(30))"
+                authority AUTHORITY, employee_login_password VARCHAR(30),\
+                PRIMARY KEY (company_id, employee_id))"
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 勤怠記録テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS work_records (\
-                work_record_id SERIAL PRIMARY KEY, employee_id INTEGER,\
-                FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
-                work_year INTEGER, work_month INTEGER,\
-                work_date DATE, day_of_the_week VARCHAR(30), work_status VARCHAR(30),\
+                work_record_id SERIAL PRIMARY KEY,\
+                company_id INTEGER, employee_id INTEGER,\
+                FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
+                work_date TIMESTAMP, day_of_the_week DAY_OF_THE_WEEK, work_status WORK_STATUS,\
                 start_work_at TIME, finish_work_at TIME, start_break_at TIME, finish_break_at TIME,\
                 start_overwork_at TIME, finish_overwork_at TIME,\
-                workplace VARCHAR(30), work_contents VARCHAR(50))"
+                workplace WORKPLACE, work_contents VARCHAR(50))"
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 勤怠修正依頼テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS correction_requests (\
-                    correction_id SERIAL PRIMARY KEY, employee_id INTEGER,\
-                    FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                    correction_id SERIAL PRIMARY KEY,\
+                    company_id INTEGER, employee_id INTEGER,\
+                    FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
                     correction_date TIMESTAMP, correction_contents VARCHAR(50),\
-                    request_date TIMESTAMP, status INTEGER,\
-                    confirmed_at TIMESTAMP, confirmed_by INTEGER,\
-                    FOREIGN KEY (confirmed_by) REFERENCES employees(employee_id),\
-                    reject_reason VARCHAR(50))"
+                    request_date TIMESTAMP, status STATUS,\
+                    confirmed_at TIMESTAMP, reject_reason VARCHAR(50))"
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 有休記録テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS paid_leaves_recodes (\
-                    paid_leave_id SERIAL PRIMARY KEY, employee_id INTEGER,\
-                    FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                    paid_leave_id SERIAL PRIMARY KEY,\
+                    company_id INTEGER, employee_id INTEGER,\
+                    FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
                     paid_leave_date TIMESTAMP, paid_leaves_code INTEGER,\
-                    request_date TIMESTAMP, status INTEGER,\
-                    confirmed_at TIMESTAMP, confirmed_by INTEGER,\
-                    FOREIGN KEY (confirmed_by) REFERENCES employees(employee_id),\
-                    reject_reason VARCHAR(50))"
+                    request_date TIMESTAMP, status STATUS,\
+                    confirmed_at TIMESTAMP, reject_reason VARCHAR(50))"
                 cursor.execute(sql)
+            conn.commit()
             with conn.cursor() as cursor:
                 # 有休日数テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS paid_leaves_days (\
-                employee_id INTEGER,\
-                FOREIGN KEY (employee_id) REFERENCES employees(employee_id),\
+                company_id INTEGER, employee_id INTEGER,\
+                FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
                 year INTEGER, max_paid_leaves_days INTEGER,\
                 used_paid_leaves_days INTEGER, remaining_paid_leaves_days INTEGER)"
                 cursor.execute(sql)
+            conn.commit()
 
     ######################################################################################
     # ここから管理者用
@@ -115,78 +190,87 @@ class Models():
     def add_company(self, company_name, company_email, company_login_password):
         # 会社を追加する
         # add: ハッシュ化したパスワードをデータベースに保存する
-        # add: *で隠して、文字数だけ返す
-        conn = psycopg2.connect(
-            host=self.host,
-            port=self.port,
-            password=self.password,
-            user=self.user,
-            database=self.database
-        )
-        with conn:
-            with conn.cursor() as cursor:
-                # テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS companies (company_id SERIAL PRIMARY KEY, company_name VARCHAR(30), company_email VARCHAR(30), company_login_password VARCHAR(30))"
-                cursor.execute(sql)
-            # コミットしてトランザクション実行
-            conn.commit()
-            with conn.cursor() as cursor:
-                # レコードを挿入
-                sql = "INSERT INTO companies (company_name, company_email, company_login_password) VALUES (%s, %s, %s)"
-                cursor.execute(sql, (company_name, company_email, company_login_password))
-            # コミットしてトランザクション実行
-            conn.commit()
+        # add: sessionにcompany_idを保存する
+        # add: company_login_passwordを隠して通信する
+        sql = "INSERT INTO companies (company_name, company_email, company_login_password) VALUES (%s, %s, %s)"
+        self.execute_query(sql, (company_name, company_email, company_login_password))
+
+        # 会社IDを取得する
+        sql = "SELECT company_id, company_name, company_email, company_login_password FROM companies WHERE company_name = %s AND company_email = %s"
+        data = self.execute_query(sql, (company_name, company_email))[0]
+        # company_login_passwordの文字数を取得して、*をかける
+        company_login_password_length = len(data[3])
+        hidden_company_login_password = "*" * company_login_password_length
+
+        self.create_other_tables()
 
         return {
-            "company_id": 1,
-            "company_name": company_name,
-            "company_email": company_email,
-            "company_login_password": "*******",
+            "company_id": data[0],
+            "company_name": data[1],
+            "company_email": data[2],
+            "company_login_password": hidden_company_login_password,
         }
 
     def get_company(self, company_id):
         # 会社情報を取得する
+        sql = "SELECT company_id, company_name, company_email FROM companies WHERE company_id = %s"
+        data = self.execute_query(sql, (company_id,))[0]
         return {
-            "company_id": company_id,
-            "company_name": "株式会社○○",
-            "company_email": "aaa.com",
-            "company_login_password": "*******",
+            "company_id": data[0],
+            "company_name": data[1],
+            "company_email": data[2],
         }
 
-    def update_company(self, company_id, company_name, company_email, old_company_login_password, new_company_login_password):
+    def update_company(self, company_id, company_name: str = "", company_email: str = "", old_company_login_password: str = "", new_company_login_password: str = ""):
         # 会社情報を更新する
         # add: ハッシュ化したパスワードをデータベースに保存する
-        # add: *で隠して、文字数だけ返す
-        # add: 変更したいときは、古いパスワードを入力する
+        sql = "SELECT company_login_password FROM companies WHERE company_id = %s"
+        company_login_password = self.execute_query(sql, (company_id,))[0][0]
+        if company_login_password != old_company_login_password:
+            return {
+                "error": "古いパスワードが間違っています",
+            }
+        # 空じゃないものだけ更新する
+        if company_name != "":
+            sql = "UPDATE companies SET company_name = %s WHERE company_id = %s"
+            self.execute_query(sql, (company_name, company_id))
+        if company_email != "":
+            sql = "UPDATE companies SET company_email = %s WHERE company_id = %s"
+            self.execute_query(sql, (company_email, company_id))
+        if new_company_login_password != "":
+            sql = "UPDATE companies SET company_login_password = %s WHERE company_id = %s"
+            self.execute_query(sql, (new_company_login_password, company_id))
+        # 会社情報を取得する
+        sql = "SELECT company_id, company_name, company_email FROM companies WHERE company_id = %s"
+        data = self.execute_query(sql, (company_id,))[0]
+        # company_login_passwordの文字数を取得して、*をかける
+        new_company_login_password_length = len(new_company_login_password)
+        hidden_new_company_login_password = "*" * new_company_login_password_length
         return {
-            "company_id": company_id,
-            "company_name": company_name,
-            "company_email": company_email,
-            "company_login_password": "*******",
+            "company_id": data[0],
+            "company_name": data[1],
+            "company_email": data[2],
+            "company_login_password": hidden_new_company_login_password
         }
 
-    def add_employee(self, company_id, employee_name, authority_code):
+    def add_employee(self, company_id, employee_name, employee_email, authority):
         # 社員を追加する
-        # add: idは自動で振られる
-        conn = psycopg2.connect(
-            host=self.host,
-            port=self.port,
-            password=self.password,
-            user=self.user,
-            database=self.database
-        )
-        with conn:
-            with conn.cursor() as cursor:
-                # 社員を追加する
-                sql = "INSERT INTO employees (company_id, employee_name, authority_code) VALUES (%s, %s, %s)"
-                cursor.execute(sql)
-            # コミットしてトランザクション実行
-            conn.commit()
+        # add: ハッシュ化したパスワードをデータベースに保存する
+        # add: sessionにemployee_idを保存する
+        # add: tmp_employee_login_passwordを隠して通信する
+        tmp_employee_login_password = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+        sql = "INSERT INTO employees (company_id, employee_name, employee_email, authority, employee_login_password) VALUES (%s, %s, %s, %s, %s)"
+        self.execute_query(sql, (company_id, employee_name, employee_email, authority, tmp_employee_login_password))
+
+        # 社員IDを取得する
+        sql = "SELECT employee_id, employee_name, employee_email, authority, employee_login_password FROM employees WHERE company_id = %s AND employee_email = %s"
+        data = self.execute_query(sql, (company_id, employee_email))[0]
         return {
-            "employee_id": 1,
-            "employee_name": employee_name,
-            "employee_email": "aaa.com",
-            "tmp_employee_login_password": "aE9kncIYMXls92jNji9n48HB78b3",
+            "employee_id": data[0],
+            "employee_name": data[1],
+            "employee_email": data[2],
+            "authority": data[3],
+            "employee_login_password": tmp_employee_login_password,
         }
 
     def get_employees(self, company_id):
