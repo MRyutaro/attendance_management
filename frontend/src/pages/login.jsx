@@ -19,12 +19,12 @@ const Login = () => {
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
-                <label htmlFor="email-address" className="sr-only">
+                <label htmlFor="email" className="sr-only">
                   Email address
                 </label>
                 <input
-                  id="login_email"
-                  name="login_email"
+                  id="email"
+                  name="email"
                   type="text"
                   autoComplete="current-email"
                   required
@@ -38,8 +38,8 @@ const Login = () => {
                   Password
                 </label>
                 <input
-                  id="login_password"
-                  name="login_password"
+                  id="password"
+                  name="password"
                   type="text"
                   autoComplete="current-password"
                   required
