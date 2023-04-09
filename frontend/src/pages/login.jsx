@@ -23,10 +23,10 @@ const Login = () => {
                   Email address
                 </label>
                 <input
-                  id="email-address"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
+                  id="login_email"
+                  name="login_email"
+                  type="text"
+                  autoComplete="current-email"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="Email or Username"
@@ -38,9 +38,9 @@ const Login = () => {
                   Password
                 </label>
                 <input
-                  id="password"
-                  name="password"
-                  type="password"
+                  id="login_password"
+                  name="login_password"
+                  type="text"
                   autoComplete="current-password"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
