@@ -14,7 +14,7 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "dev"
+        MODE = "prod"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
