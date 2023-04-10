@@ -141,7 +141,8 @@ class Models():
                 employee_id SERIAL, company_id INTEGER,\
                 FOREIGN KEY (company_id) REFERENCES companies(company_id),\
                 employee_name VARCHAR(30), employee_email VARCHAR(30),\
-                authority AUTHORITY, employee_login_password VARCHAR(30),\
+                employee_login_password VARCHAR(30), authority AUTHORITY,\
+                commuting_expenses INTEGER,\
                 PRIMARY KEY (company_id, employee_id))"
                 cursor.execute(sql)
             conn.commit()
@@ -280,23 +281,28 @@ class Models():
 
     def get_employees(self, company_id):
         # 全社員情報を取得する
+        sql = "SELECT employee_id, employee_name, employee_email, authority FROM employees WHERE company_id = %s"
+        data = self.execute_query(sql, (company_id,))
+
+        employees = [
+            {
+                "employee_id": employee[0],
+                "employee_name": employee[1],
+                "employee_email": employee[2],
+                "authority": employee[3],
+            }
+            for employee in data
+        ]
+
         return {
-            "employees": [
-                {
-                    "employee_id": 1,
-                    "employee_name": "山田太郎",
-                    "employee_email": "aaa.com",
-                },
-                {
-                    "employee_id": 2,
-                    "employee_name": "鈴木花子",
-                    "employee_email": "bbb.com",
-                },
-            ]
+            "employees": employees,
         }
 
     def delete_employee(self, company_id, employee_id):
         # 社員を削除する
+        sql = "DELETE FROM employees WHERE company_id = %s AND employee_id = %s"
+        self.execute_query(sql, (company_id, employee_id))
+
         return {
             "employee_id": employee_id,
         }
@@ -318,23 +324,23 @@ class Models():
         FROM correction_records
         WHERE EXTRACT(YEAR FROM correction_request_date) = 2022;
         '''
+        sql = "SELECT correction_id, employee_name, correction_date, correction_contents FROM correction_records WHERE company_id = %s AND EXTRACT(YEAR FROM correction_request_date) = %s AND EXTRACT(MONTH FROM correction_request_date) = %s"
+        data = self.execute_query(sql, (company_id, year, month))
+
+        correction_requests = [
+            {
+                "correction_id": correction_request[0],
+                "employee_name": correction_request[1],
+                "correction_date": correction_request[2],
+                "correction_contents": correction_request[3],
+            }
+            for correction_request in data
+        ]
+
         return {
             "year": year,
             "month": month,
-            "correction_requests": [
-                {
-                    "correction_id": 1,
-                    "employee_name": "山田太郎",
-                    "correction_date": "2021-04-01",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                },
-                {
-                    "correction_id": 2,
-                    "employee_name": "鈴木花子",
-                    "correction_date": "2021-04-01",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                },
-            ]
+            "correction_requests": correction_requests,
         }
 
     def approve_correction(self, company_id, correction_id):
@@ -483,15 +489,18 @@ class Models():
             "is_active": False
         }
 
-    def get_my_information(self, employee_email):
+    def get_my_information(self, company_id, employee_id):
         # 社員情報を取得する
+        sql = "SELECT employee_name, employee_email, authority, commuting_expenses FROM employees WHERE company_id = %s AND employee_id = %s"
+        data = self.execute_query(sql, (company_id, employee_id))[0]
+
         return {
-            "company_id": 1,
-            "employee_id": 1,
-            "employee_name": "山田太郎",
-            "employee_email": employee_email,
-            "authority": "member",
-            "commuting_expenses": 1000
+            "company_id": company_id,
+            "employee_id": employee_id,
+            "employee_name": data[0],
+            "employee_email": data[1],
+            "authority": data[2],
+            "commuting_expenses": data[3]
         }
 
     def update_my_information(self, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses):

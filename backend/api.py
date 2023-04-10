@@ -43,8 +43,8 @@ def update_company(company_id: int, company_name: str = "", company_email: str =
 
 # 従業員を追加する
 @app.post(api_root + "/companies/{company_id}/employees")
-def add_employee(company_id: int, employee_email: str, authority: str):
-    return models.add_employee(company_id, employee_email, authority)
+def add_employee(company_id: int, employee_name: str, employee_email: str, authority: str):
+    return models.add_employee(company_id, employee_name, employee_email, authority)
 
 
 # 全従業員の情報を取得する
@@ -151,9 +151,9 @@ def logout():
 
 # 社員情報を取得する
 @app.get(api_root + "/companies/{company_id}/employees/{employee_id}")
-def get_my_information(employee_email: str):
+def get_my_information(company_id: int, employee_id: int):
     # fix: 社員情報の型で返す
-    return models.get_my_information(employee_email)
+    return models.get_my_information(company_id, employee_id)
 
 
 # 社員情報を更新する
