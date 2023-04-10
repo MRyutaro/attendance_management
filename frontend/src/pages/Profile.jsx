@@ -29,6 +29,7 @@ const Profile = () => {
                   placeholder="名前"
                 />
               </div>
+              <br></br>
               <div>
                 <label htmlFor="address" className="sr-only">
                   アドレス
@@ -43,6 +44,7 @@ const Profile = () => {
                   placeholder="アドレス"
                 />
               </div>
+              <br></br>
               <div>
                 <label htmlFor="password" className="sr-only">
                   パスワード
@@ -57,6 +59,7 @@ const Profile = () => {
                   placeholder="パスワード"
                 />
               </div>
+              <br></br>
               <div>
                 <label htmlFor="transportation-expense" className="sr-only">
                   交通費
