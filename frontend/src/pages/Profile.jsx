@@ -12,9 +12,9 @@ const Profile = () => {
           <div>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">個人設定</h2>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form className="mt-8 flex flex-col " action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
-            <div className="-space-y-px rounded-md shadow-sm">
+            <div className=" flex flex-col gap-5 rounded-md shadow-sm">
               <div>
                 <label htmlFor="name" className="sr-only">
                   名前
@@ -29,7 +29,7 @@ const Profile = () => {
                   placeholder="名前"
                 />
               </div>
-              <br></br>
+
               <div>
                 <label htmlFor="address" className="sr-only">
                   アドレス
@@ -44,8 +44,8 @@ const Profile = () => {
                   placeholder="アドレス"
                 />
               </div>
-              <br></br>
-              <div>
+
+              <div className="">
                 <label htmlFor="password" className="sr-only">
                   パスワード
                 </label>
@@ -59,7 +59,7 @@ const Profile = () => {
                   placeholder="パスワード"
                 />
               </div>
-              <br></br>
+
               <div>
                 <label htmlFor="transportation-expense" className="sr-only">
                   交通費
@@ -74,20 +74,20 @@ const Profile = () => {
                   placeholder="交通費"
                 />
               </div>
+              <div>
+                <button
+                  onClick={clickHandler}
+                  type="submit"
+                  className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <div className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
+                  </span>
+                  Submit
+                </button>
+              </div>
             </div>
 
-            <div>
-              <button
-                onClick={clickHandler}
-                type="submit"
-                className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              >
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <div className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
-                </span>
-                Submit
-              </button>
-            </div>
             <div className="justify-between">
               <div className="text-sm"></div>
             </div>

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 const Login = () => {
   const router = useRouter();
@@ -34,9 +34,9 @@ const Login = () => {
           <div>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">ログイン</h2>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form className="mt-8 " action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
-            <div className="-space-y-px rounded-md shadow-sm">
+            <div className=" rounded-md shadow-sm">
               <div>
                 <label htmlFor="email" className="sr-only">
                   Email address
@@ -53,8 +53,8 @@ const Login = () => {
                   onChange={(event) => setUseremail(event.target.value)}
                 />
               </div>
-              <br></br>
-              <div>
+
+              <div className="mt-5">
                 <label htmlFor="password" className="sr-only">
                   Password
                 </label>
@@ -80,7 +80,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div>
+            <div className="mt-10">
               <button
                 onClick={clickHandler}
                 type="submit"
