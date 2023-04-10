@@ -14,7 +14,7 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "dev"
+        MODE = "prod"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
@@ -111,6 +111,11 @@ class Models():
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
+                # paid_leaves_typeのenumを作成
+                sql = "CREATE TYPE PAID_LEAVES_TYPE AS ENUM ('ALL_DAY', 'MORNING', 'AFTERNOON')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
                 # statusのenumを作成
                 sql = "CREATE TYPE STATUS AS ENUM ('REQUESTED', 'CONFIRMED', 'REJECTED')"
                 cursor.execute(sql)
@@ -169,7 +174,7 @@ class Models():
                     paid_leave_id SERIAL PRIMARY KEY,\
                     company_id INTEGER, employee_id INTEGER,\
                     FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
-                    paid_leave_date TIMESTAMP, paid_leaves_code INTEGER,\
+                    paid_leave_date TIMESTAMP, paid_leaves_type PAID_LEAVES_TYPE,\
                     request_date TIMESTAMP, status STATUS,\
                     confirmed_at TIMESTAMP, reject_reason VARCHAR(50))"
                 cursor.execute(sql)
