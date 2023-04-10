@@ -7,7 +7,6 @@ const Profile = () => {
   };
   return (
     <>
-      {}
       <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
           <div>
@@ -17,32 +16,59 @@ const Profile = () => {
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
-                <label htmlFor="namesetting" className="sr-only">
-                  namesetting
+                <label htmlFor="name" className="sr-only">
+                  名前
                 </label>
                 <input
-                  id="namesetting"
-                  name="namesetting"
-                  type="pnamesetting"
-                  autoComplete="new-namesetting"
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Name"
+                  placeholder="名前"
                 />
               </div>
-              <br></br>
               <div>
-                <label htmlFor="staffemail" className="sr-only">
-                  staffemail
+                <label htmlFor="address" className="sr-only">
+                  アドレス
                 </label>
                 <input
-                  id="staffemail"
-                  name="staffemail"
-                  type="pstaffemail"
-                  autoComplete="new-staffemail"
+                  id="address"
+                  name="address"
+                  type="text"
+                  autoComplete="address"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Email"
+                  placeholder="アドレス"
+                />
+              </div>
+              <div>
+                <label htmlFor="password" className="sr-only">
+                  パスワード
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  placeholder="パスワード"
+                />
+              </div>
+              <div>
+                <label htmlFor="transportation-expense" className="sr-only">
+                  交通費
+                </label>
+                <input
+                  id="transportation-expense"
+                  name="transportation-expense"
+                  type="number"
+                  autoComplete="off"
+                  required
+                  className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  placeholder="交通費"
                 />
               </div>
             </div>
