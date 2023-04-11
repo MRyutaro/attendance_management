@@ -133,8 +133,8 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int, reject_reason:
 
 # 新規登録する
 @app.post(api_root + "/signup")
-def signup(company_id: int, employee_id: int, employee_email: str, employee_name: str, employee_login_password: str):
-    return models.signup(company_id, employee_id, employee_email, employee_name, employee_login_password)
+def signup(company_id: int, employee_email: str, employee_name: str, employee_login_password: str):
+    return models.signup(company_id, employee_email, employee_name, employee_login_password)
 
 
 # ログインする
@@ -158,8 +158,8 @@ def get_my_information(company_id: int, employee_id: int):
 
 # 社員情報を更新する
 @app.put(api_root + "/companies/{company_id}/employees/{employee_id}")
-def update_my_information(employee_name: str, employee_email: str, old_employee_login_password: str, new_employee_login_password: str, commuting_expenses: int):
-    return models.update_my_information(employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses)
+def update_my_information(employee_id: int = 0, employee_name: str = "", employee_email: str = "", old_employee_login_password: str = "", new_employee_login_password: str = "", commuting_expenses: int = 0):
+    return models.update_my_information(employee_id, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses)
 
 
 # 労働開始ボタンを押す
