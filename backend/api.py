@@ -43,8 +43,8 @@ def update_company(company_id: int, company_name: str = "", company_email: str =
 
 # 従業員を追加する
 @app.post(api_root + "/companies/{company_id}/employees")
-def add_employee(company_id: int, employee_email: str, authority: str):
-    return models.add_employee(company_id, employee_email, authority)
+def add_employee(company_id: int, employee_name: str, employee_email: str, authority: str):
+    return models.add_employee(company_id, employee_name, employee_email, authority)
 
 
 # 全従業員の情報を取得する
@@ -133,8 +133,8 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int, reject_reason:
 
 # 新規登録する
 @app.post(api_root + "/signup")
-def signup(company_id: int, employee_id: int, employee_email: str, employee_name: str, employee_login_password: str):
-    return models.signup(company_id, employee_id, employee_email, employee_name, employee_login_password)
+def signup(company_id: int, employee_email: str, employee_name: str, employee_login_password: str):
+    return models.signup(company_id, employee_email, employee_name, employee_login_password)
 
 
 # ログインする
@@ -151,15 +151,15 @@ def logout():
 
 # 社員情報を取得する
 @app.get(api_root + "/companies/{company_id}/employees/{employee_id}")
-def get_my_information(employee_email: str):
+def get_my_information(company_id: int, employee_id: int):
     # fix: 社員情報の型で返す
-    return models.get_my_information(employee_email)
+    return models.get_my_information(company_id, employee_id)
 
 
 # 社員情報を更新する
 @app.put(api_root + "/companies/{company_id}/employees/{employee_id}")
-def update_my_information(employee_name: str, employee_email: str, old_employee_login_password: str, new_employee_login_password: str, commuting_expenses: int):
-    return models.update_my_information(employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses)
+def update_my_information(employee_id: int = 0, employee_name: str = "", employee_email: str = "", old_employee_login_password: str = "", new_employee_login_password: str = "", commuting_expenses: int = 0):
+    return models.update_my_information(employee_id, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses)
 
 
 # 労働開始ボタンを押す

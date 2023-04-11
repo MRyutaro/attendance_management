@@ -111,6 +111,11 @@ class Models():
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
+                # paid_leaves_typeのenumを作成
+                sql = "CREATE TYPE PAID_LEAVES_TYPE AS ENUM ('ALL_DAY', 'MORNING', 'AFTERNOON')"
+                cursor.execute(sql)
+            conn.commit()
+            with conn.cursor() as cursor:
                 # statusのenumを作成
                 sql = "CREATE TYPE STATUS AS ENUM ('REQUESTED', 'CONFIRMED', 'REJECTED')"
                 cursor.execute(sql)
@@ -136,7 +141,8 @@ class Models():
                 employee_id SERIAL, company_id INTEGER,\
                 FOREIGN KEY (company_id) REFERENCES companies(company_id),\
                 employee_name VARCHAR(30), employee_email VARCHAR(30),\
-                authority AUTHORITY, employee_login_password VARCHAR(30),\
+                employee_login_password VARCHAR(30), authority AUTHORITY,\
+                commuting_expenses INTEGER,\
                 PRIMARY KEY (company_id, employee_id))"
                 cursor.execute(sql)
             conn.commit()
@@ -149,18 +155,8 @@ class Models():
                 work_date TIMESTAMP, day_of_the_week DAY_OF_THE_WEEK, work_status WORK_STATUS,\
                 start_work_at TIME, finish_work_at TIME, start_break_at TIME, finish_break_at TIME,\
                 start_overwork_at TIME, finish_overwork_at TIME,\
-                workplace WORKPLACE, work_contents VARCHAR(50))"
-                cursor.execute(sql)
-            conn.commit()
-            with conn.cursor() as cursor:
-                # 勤怠修正依頼テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS correction_requests (\
-                    correction_id SERIAL PRIMARY KEY,\
-                    company_id INTEGER, employee_id INTEGER,\
-                    FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
-                    correction_date TIMESTAMP, correction_contents VARCHAR(50),\
-                    request_date TIMESTAMP, status STATUS,\
-                    confirmed_at TIMESTAMP, reject_reason VARCHAR(50))"
+                workplace WORKPLACE, work_contents VARCHAR(50),\
+                status STATUS, confirmed_at TIMESTAMP, reject_reason VARCHAR(50))"
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
@@ -169,7 +165,7 @@ class Models():
                     paid_leave_id SERIAL PRIMARY KEY,\
                     company_id INTEGER, employee_id INTEGER,\
                     FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id),\
-                    paid_leave_date TIMESTAMP, paid_leaves_code INTEGER,\
+                    paid_leave_date TIMESTAMP, paid_leaves_type PAID_LEAVES_TYPE,\
                     request_date TIMESTAMP, status STATUS,\
                     confirmed_at TIMESTAMP, reject_reason VARCHAR(50))"
                 cursor.execute(sql)
@@ -228,7 +224,7 @@ class Models():
         company_login_password = self.execute_query(sql, (company_id,))[0][0]
         if company_login_password != old_company_login_password:
             return {
-                "error": "古いパスワードが間違っています",
+                "error": "パスワードが間違っています",
             }
         # 空じゃないものだけ更新する
         if company_name != "":
@@ -275,23 +271,28 @@ class Models():
 
     def get_employees(self, company_id):
         # 全社員情報を取得する
+        sql = "SELECT employee_id, employee_name, employee_email, authority FROM employees WHERE company_id = %s"
+        data = self.execute_query(sql, (company_id,))
+
+        employees = [
+            {
+                "employee_id": employee[0],
+                "employee_name": employee[1],
+                "employee_email": employee[2],
+                "authority": employee[3],
+            }
+            for employee in data
+        ]
+
         return {
-            "employees": [
-                {
-                    "employee_id": 1,
-                    "employee_name": "山田太郎",
-                    "employee_email": "aaa.com",
-                },
-                {
-                    "employee_id": 2,
-                    "employee_name": "鈴木花子",
-                    "employee_email": "bbb.com",
-                },
-            ]
+            "employees": employees,
         }
 
     def delete_employee(self, company_id, employee_id):
         # 社員を削除する
+        sql = "DELETE FROM employees WHERE company_id = %s AND employee_id = %s"
+        self.execute_query(sql, (company_id, employee_id))
+
         return {
             "employee_id": employee_id,
         }
@@ -303,7 +304,7 @@ class Models():
             "employee_id": employee_id,
             "year": year,
             "month": month,
-            "work_records": "csv形式の勤怠情報"
+            "work_records": "csv形式の勤怠情報を返します。"
         }
 
     def get_correction_requests(self, company_id, year, month):
@@ -313,23 +314,32 @@ class Models():
         FROM correction_records
         WHERE EXTRACT(YEAR FROM correction_request_date) = 2022;
         '''
+        sql = "SELECT work_record_id, employee_id, work_date, day_of_the_week, start_work_at, finish_work_at,\
+        start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_content,\
+        FROM work_records WHERE company_id = %s\
+        AND EXTRACT(YEAR FROM work_date) = %s AND EXTRACT(MONTH FROM work_date) = %s AND correction_request_date = REQUESTED"
+        data = self.execute_query(sql, (company_id, year, month))
+
+        correction_requests = [
+            {
+                "work_record_id": correction_request[0],
+                "employee_id": correction_request[1],
+                "work_date": correction_request[2],
+                "day_of_the_week": correction_request[3],
+                "start_work_at": correction_request[4],
+                "finish_work_at": correction_request[5],
+                "start_break_at": correction_request[6],
+                "finish_break_at": correction_request[7],
+                "start_overtime_work_at": correction_request[8],
+                "finish_overtime_work_at": correction_request[9],
+                "workplace": correction_request[10],
+                "work_content": correction_request[11],
+            }
+            for correction_request in data
+        ]
+
         return {
-            "year": year,
-            "month": month,
-            "correction_requests": [
-                {
-                    "correction_id": 1,
-                    "employee_name": "山田太郎",
-                    "correction_date": "2021-04-01",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                },
-                {
-                    "correction_id": 2,
-                    "employee_name": "鈴木花子",
-                    "correction_date": "2021-04-01",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                },
-            ]
+            "correction_requests": correction_requests,
         }
 
     def approve_correction(self, company_id, correction_id):
@@ -449,25 +459,27 @@ class Models():
     # memberができる操作
     ######################################################################################
 
-    def signup(self, company_id, employee_id, employee_email, employee_name, employee_login_password):
-        # 新規登録する
-        # add: ハッシュ化したパスワードをデータベースに保存する
-        # add: セッションで管理する
-        # フローとしては、管理者が会社を登録→管理者が社員を登録→社員が登録する
-        return {
-            "employee_email": employee_email,
-            "employee_name": employee_name,
-            "is_active": True
-        }
-
-    def login(self, company_id, employee_id, employee_email, employee_login_password):
+    def login(self, company_id, employee_email, employee_name, employee_login_password):
         # ログインする
-        # add: データベースに保存されている内容と一致するかどうかを確認する
-        # add: company_idとemployee_id, もしくはemployee_emailでログインできるように
+        # fix: パスワードを暗号化する
+        # fix: セッションを作成する
+        # add: 失敗の要因を場合分けする
+        sql = "SELECT employee_login_password, employee_id FROM employees WHERE company_id = %s AND employee_name = %s AND employee_email = %s"
+        data = self.execute_query(sql, (company_id, employee_name, employee_email))[0]
+        if data[0] != employee_login_password:
+            return {
+                "company_id": "",
+                "employee_id": "",
+                "employee_email": "",
+                "employee_name": "",
+                "is_active": False
+            }
+
         return {
             "company_id": company_id,
-            "employee_id": employee_id,
+            "employee_id": data[1],
             "employee_email": employee_email,
+            "employee_name": employee_name,
             "is_active": True
         }
 
@@ -478,111 +490,203 @@ class Models():
             "is_active": False
         }
 
-    def get_my_information(self, employee_email):
+    def get_my_information(self, company_id, employee_id):
         # 社員情報を取得する
+        sql = "SELECT company_id, employee_id, employee_name, employee_email, authority, commuting_expenses FROM employees WHERE company_id = %s AND employee_id = %s"
+        data = self.execute_query(sql, (company_id, employee_id))[0]
+
         return {
-            "company_id": 1,
-            "employee_id": 1,
-            "employee_name": "山田太郎",
-            "employee_email": employee_email,
-            "authority": "member",
-            "commuting_expenses": 1000
+            "company_id": data[0],
+            "employee_id": data[1],
+            "employee_name": data[2],
+            "employee_email": data[3],
+            "authority": data[4],
+            "commuting_expenses": data[5]
         }
 
-    def update_my_information(self, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses):
+    def update_my_information(self, company_id, employee_id, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses):
         # 社員情報を更新する
         # add: old_employee_login_passwordをハッシュ化してデータベースに保存されている内容と一致するかどうかを確認する
         # add: new_employee_login_passwordを**で隠して、文字数だけ返す
+
+        sql = "SELECT employee_login_password FROM employees WHERE company_id = %s AND employee_id = %s"
+        employee_login_password = self.execute_query(sql, (company_id, employee_id))[0][0]
+        if employee_login_password != old_employee_login_password:
+            return {
+                "error": "パスワードが間違っています",
+            }
+        # 空じゃないものだけ更新する
+        if employee_name != "":
+            sql = "UPDATE employees SET employee_name = %s WHERE company_id = %s AND employee_id = %s"
+            self.execute_query(sql, (employee_name, company_id, employee_id))
+        if employee_email != "":
+            sql = "UPDATE employees SET employee_email = %s WHERE company_id = %s AND employee_id = %s"
+            self.execute_query(sql, (employee_email, company_id, employee_id))
+        if new_employee_login_password != "":
+            sql = "UPDATE employees SET employee_login_password = %s WHERE company_id = %s AND employee_id = %s"
+            self.execute_query(sql, (new_employee_login_password, company_id, employee_id))
+        if commuting_expenses != "":
+            sql = "UPDATE employees SET commuting_expenses = %s WHERE company_id = %s AND employee_id = %s"
+            self.execute_query(sql, (commuting_expenses, company_id, employee_id))
+        # 従業員情報を取得する
+        sql = "SELECT company_id, employee_id, employee_name, employee_email, commuting_expenses FROM employees WHERE company_id = %s AND employee_id = %s"
+        data = self.execute_query(sql, (company_id, employee_id))[0]
+        # employee_login_passwordの文字数を取得して、*をかける
+        new_employee_login_password_length = len(new_employee_login_password)
+        hidden_new_employee_login_password = "*" * new_employee_login_password_length
         return {
-            "employee_name": employee_name,
-            "employee_email": employee_email,
-            "employee_login_password": "*******",
-            "commuting_expenses": commuting_expenses
+            "company_id": data[0],
+            "employee_id": data[1],
+            "employee_name": data[2],
+            "employee_email": data[3],
+            "employee_login_password": hidden_new_employee_login_password,
+            "commuting_expenses": data[4],
         }
 
-    def start_work_at(self, company_id, employee_id, start_work_at):
+    def start_work_at(self, company_id, employee_id, work_date, start_work_at):
         # 労働開始ボタンを押す
+        sql = "INSERT INTO work_records (company_id, employee_id, work_date, start_work_at) VALUES (%s, %s, %s, %s)"
+        self.execute_query(sql, (company_id, employee_id, work_date, start_work_at))
         return {
             "is_working": True,
+            "work_date": work_date,
             "start_work_at": start_work_at
         }
 
-    def finish_work_at(self, company_id, employee_id, finish_work_at):
+    def finish_work_at(self, company_id, employee_id, work_date, finish_work_at):
         # 労働終了ボタンを押す
+        sql = "UPDATE work_records SET finish_work_at = %s WHERE company_id = %s AND employee_id = %s AND work_date = %s"
+        self.execute_query(sql, (finish_work_at, company_id, employee_id, work_date))
         return {
             "is_working": False,
+            "work_date": work_date,
             "finish_work_at": finish_work_at
         }
 
-    def start_break_at(self, company_id, employee_id, start_break_at):
+    def start_break_at(self, company_id, employee_id, work_date, start_break_at):
         # 休憩開始ボタンを押す
+        sql = "UPDATE work_records SET start_break_at = %s WHERE company_id = %s AND employee_id = %s AND work_date = %s"
+        self.execute_query(sql, (start_break_at, company_id, employee_id, work_date))
         return {
-            "is_working": False,
+            "is_working": True,
+            "work_date": work_date,
             "start_break_at": start_break_at
         }
 
-    def finish_break_at(self, company_id, employee_id, finish_break_at):
+    def finish_break_at(self, company_id, employee_id, work_date, finish_break_at):
         # 休憩終了ボタンを押す
+        sql = "UPDATE work_records SET finish_break_at = %s WHERE company_id = %s AND employee_id = %s AND work_date = %s"
+        self.execute_query(sql, (finish_break_at, company_id, employee_id, work_date))
         return {
-            "is_working": True,
+            "is_working": False,
+            "work_date": work_date,
             "finish_break_at": finish_break_at
         }
 
-    def start_overtime_work_at(self, company_id, employee_id, start_overtime_work_at):
+    def start_overtime_work_at(self, company_id, employee_id, work_date, start_overtime_work_at):
         # 残業開始ボタンを押す
+        sql = "UPDATE work_records SET start_overtime_work_at = %s WHERE company_id = %s AND employee_id = %s AND work_date = %s"
+        self.execute_query(sql, (start_overtime_work_at, company_id, employee_id, work_date))
         return {
             "is_working": True,
+            "work_date": work_date,
             "start_overtime_work_at": start_overtime_work_at
-        }
+        }    
 
-    def finish_overtime_work_at(self, company_id, employee_id, finish_overtime_work_at):
+    def finish_overtime_work_at(self, company_id, employee_id, work_date, finish_overtime_work_at):
         # 残業終了ボタンを押す
+        sql = "UPDATE work_records SET finish_overtime_work_at = %s WHERE company_id = %s AND employee_id = %s AND work_date = %s"
+        self.execute_query(sql, (finish_overtime_work_at, company_id, employee_id, work_date))
         return {
             "is_working": False,
+            "work_date": work_date,
             "finish_overtime_work_at": finish_overtime_work_at
         }
 
-    def work_contents(self, company_id, employee_id, start_work_at, workplace, work_contents):
+    def work_contents(self, company_id, employee_id, work_date, workplace, work_contents):
         # 作業内容を記録する
+        sql = "UPDATE work_records SET workplace = %s, work_contents = %s WHERE company_id = %s AND employee_id = %s AND work_date = %s"
+        self.execute_query(sql, (workplace, work_contents, company_id, employee_id, work_date))
         return {
-            "start_work_at": start_work_at,
+            "work_date": work_date,
             "workplace": workplace,
             "work_contents": work_contents
         }
 
     def get_monthly_work_records(self, company_id, employee_id, year, month):
         # 月別勤怠情報を取得する
+        sql = "SELECT work_date, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_contents FROM work_records WHERE company_id = %s AND employee_id = %s AND YEAR(work_date) = %s AND MONTH(work_date) = %s"
+        data = self.execute_query(sql, (company_id, employee_id, year, month))
+
+        # add: day_of_the_weekとwork_statusを追加する
+        work_records = [
+            {
+                "work_date": work_record[0],
+                "start_work_at": work_record[1],
+                "finish_work_at": work_record[2],
+                "start_break_at": work_record[3],
+                "finish_break_at": work_record[4],
+                "start_overtime_work_at": work_record[5],
+                "finish_overtime_work_at": work_record[6],
+                "workplace": work_record[7],
+                "work_contents": work_record[8]
+            } for work_record in data
+        ]
+
         return {
             "year": year,
             "month": month,
-            "work_records": [
-                {
-                    "start_work_at": "2020-01-01 09:00:00",
-                    "finish_work_at": "2020-01-01 18:00:00",
-                    "start_break_at": "2020-01-01 12:00:00",
-                    "finish_break_at": "2020-01-01 13:00:00",
-                    "start_overtime_work_at": "2020-01-01 18:00:00",
-                    "finish_overtime_work_at": "2020-01-01 20:00:00",
-                    "workplace": "オフィス",
-                    "work_contents": "プログラミング"
-                },
-                {
-                    "start_work_at": "2020-01-02 09:00:00",
-                    "finish_work_at": "2020-01-02 18:00:00",
-                    "start_break_at": "2020-01-02 12:00:00",
-                    "finish_break_at": "2020-01-02 13:00:00",
-                    "workplace": "オフィス",
-                    "work_contents": "プログラミング"
-                }
-            ]
+            "work_records": work_records
         }
 
-    def request_correction(self, company_id, employee_id, year, month, correction_date, request_contents):
+    def request_correction(self, company_id, employee_id, work_record_id, work_date, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_contents):
         # 修正依頼をする
+        # 空白じゃないものだけ更新する
+        sql = "UPDATE work_records SET "
+        # 変数のリストを作成
+        variables = []
+        request_contents = {}
+        if start_work_at != "":
+            sql += "start_work_at = %s, "
+            variables.append(start_work_at)
+            request_contents["start_work_at"] = start_work_at
+        if finish_work_at != "":
+            sql += "finish_work_at = %s, "
+            variables.append(finish_work_at)
+            request_contents["finish_work_at"] = finish_work_at
+        if start_break_at != "":
+            sql += "start_break_at = %s, "
+            variables.append(start_break_at)
+            request_contents["start_break_at"] = start_break_at
+        if finish_break_at != "":
+            sql += "finish_break_at = %s, "
+            variables.append(finish_break_at)
+            request_contents["finish_break_at"] = finish_break_at
+        if start_overtime_work_at != "":
+            sql += "start_overtime_work_at = %s, "
+            variables.append(start_overtime_work_at)
+            request_contents["start_overtime_work_at"] = start_overtime_work_at
+        if finish_overtime_work_at != "":
+            sql += "finish_overtime_work_at = %s, "
+            variables.append(finish_overtime_work_at)
+            request_contents["finish_overtime_work_at"] = finish_overtime_work_at
+        if workplace != "":
+            sql += "workplace = %s, "
+            variables.append(workplace)
+            request_contents["workplace"] = workplace
+        if work_contents != "":
+            sql += "work_contents = %s, "
+            variables.append(work_contents)
+            request_contents["work_contents"] = work_contents
+        variables.append(company_id)
+        variables.append(employee_id)
+        variables.append(work_record_id)
+        sql = sql[:-2] + " WHERE company_id = %s AND employee_id = %s AND work_record_id = %s"
+        self.execute_query(sql, variables)
+
         return {
-            "year": year,
-            "month": month,
-            "correction_date": correction_date,
+            "work_record_id": work_record_id,
+            "work_date": work_date,
             "request_contents": request_contents
         }
 
