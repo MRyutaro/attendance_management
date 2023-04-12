@@ -93,17 +93,10 @@ def get_paid_leaves_records(company_id: int, year: int, month: int):
     return models.get_paid_leaves_records(company_id, year, month)
 
 
-# 有給取得可能日数を取得する
-@app.get(api_root + "/companies/{company_id}/paid_leaves_records/remaining_days")
-def get_remaining_paid_leaves_days(company_id: int):
-    # fix: 有給取得可能日数をどうやって管理するか考える
-    return models.get_remaining_paid_leaves_days(company_id)
-
-
 # 有給取得可能日数を設定する
-@app.post(api_root + "/companies/{company_id}/paid_leaves_records/remaining_days")
-def set_remaining_paid_leaves_days(company_id: int, remaining_paid_leaves_days: int):
-    return models.set_remaining_paid_leaves_days(company_id, remaining_paid_leaves_days)
+@app.post(api_root + "/companies/{company_id}/paid_leaves_days")
+def set_remaining_paid_leave_days(company_id: int, employee_id: int, year: int, max_paid_leaves_days: int):
+    return models.set_remaining_paid_leave_days(company_id, employee_id, year, max_paid_leaves_days)
 
 
 # 従業員の有給の依頼を承認する
@@ -143,7 +136,7 @@ def get_my_information(company_id: int, employee_id: int):
 
 # 社員情報を更新する
 @app.put(api_root + "/companies/{company_id}/employees/{employee_id}")
-def update_my_information(company_id: str, employee_id: int,old_employee_login_password: str, employee_name: str = "", employee_email: str = "", new_employee_login_password: str = "", commuting_expenses: int = 0):
+def update_my_information(company_id: str, employee_id: int, old_employee_login_password: str, employee_name: str = "", employee_email: str = "", new_employee_login_password: str = "", commuting_expenses: int = 0):
     return models.update_my_information(company_id, employee_id, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses)
 
 
@@ -205,23 +198,21 @@ def request_correction(company_id: int, employee_id: int, work_date: str, start_
 
 # 有給の依頼を出す
 @app.post(api_root + "/companies/{company_id}/employees/{employee_id}/request_paid_leave")
-def request_paid_leave(company_id: int, employee_id: int, start_paid_leave_at: datetime.datetime, finish_paid_leave_at: datetime.datetime):
+def request_paid_leave(company_id: int, employee_id: int, paid_leave_date: datetime.date, work_type: str, paid_leave_reason: str):
     # add: request_paid_leave_id
-    return models.request_paid_leave(company_id, employee_id, start_paid_leave_at, finish_paid_leave_at)
+    return models.request_paid_leave(company_id, employee_id, paid_leave_date, work_type, paid_leave_reason)
 
 
 # 月ごとの有給の依頼記録を取得する
-@app.get(api_root + "/companies/{company_id}/employees/{employee_id}/paid_leaves_records")
+@app.get(api_root + "/companies/{company_id}/employees/{employee_id}/paid_leaves_records/{year}/{month}")
 def get_my_paid_leaves_records(company_id: int, employee_id: int, year: int, month: int):
-    # fix: 自分の情報しか見ない
     return models.get_my_paid_leaves_records(company_id, employee_id, year, month)
 
 
 # 有給取得可能日数を取得する
-@app.get(api_root + "/companies/{company_id}/employees/{employee_id}/paid_leaves_records/remaining_days")
-# fix: 有給取得可能日数をどうやって管理するか考える
-def get_my_remaining_paid_leaves_days(company_id: int, employee_id: int):
-    return models.get_my_remaining_paid_leaves_days(company_id, employee_id)
+@app.get(api_root + "/companies/{company_id}/employees/{employee_id}/paid_leaves_days/{year}")
+def get_my_paid_leave_days(company_id: int, employee_id: int, year: int):
+    return models.get_my_paid_leave_days(company_id, employee_id, year)
 
 
 if __name__ == "__main__":
