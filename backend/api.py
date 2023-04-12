@@ -79,18 +79,10 @@ def approve_correction(company_id: int, correction_id: int):
     return models.approve_correction(company_id, correction_id)
 
 
-# 従業員の勤怠を修正する
-@app.put(api_root + "/companies/{company_id}/monthly_work_records/{year}/{month}/correction_records")
-def update_work_records(company_id: int, year: int, month: int, start_work_at: datetime.datetime, finish_work_at: datetime.datetime, start_break_at: datetime.datetime, finish_break_at: datetime.datetime, start_overwork_at: datetime.datetime, finish_overwork_at: datetime.datetime, workplace: str, work_content: str):
-    # fix: 修正するときに、勤務時間とかを指定するようにする
-    # fix: 勤怠記録の型でやり取りするようにする
-    return models.update_work_records(company_id, year, month, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overwork_at, finish_overwork_at, workplace, work_content)
-
-
 # 従業員の勤怠の修正を却下する
 @app.post(api_root + "/companies/{company_id}/monthly_work_records/correction_records/{correction_record_id}/reject")
 def reject_correction(company_id: int, year: int, month: int, correction_record_id: int, reject_reason: str):
-    return models.reject_correction(company_id, year, month, correction_record_id, reject_reason)
+    return models.reject_correction(company_id, correction_record_id, reject_reason)
 
 
 # 従業員の有給の依頼記録を取得する

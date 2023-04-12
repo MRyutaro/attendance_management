@@ -364,51 +364,60 @@ class Models():
 
     def get_correction_requests(self, company_id, year, month):
         # 月ごとの修正依頼を取得する
-        sql = "SELECT correction_record_id, employee_id, work_date, start_work_at, finish_work_at,\
-                start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_content,\
+        # 月ごとの修正依頼を取得する
+        status = "REQUESTED"
+        sql = "SELECT correction_record_id, employee_id, work_date, start_work_at, finish_work_at, start_break_at,\
+                    finish_break_at, start_overwork_at, finish_overwork_at, workplace, work_contents\
                 FROM correction_records\
-                WHERE company_id = %s AND EXTRACT(YEAR FROM work_date) = %s\
-                    AND EXTRACT(MONTH FROM work_date) = %s AND status = REQUESTED"
-        data = self.execute_query(sql, (company_id, year, month))
+                WHERE company_id = %s AND EXTRACT(YEAR FROM work_date) = %s AND EXTRACT(MONTH FROM work_date) = %s AND status = %s"
+        data = self.execute_query(sql, (company_id, year, month, status))
 
-        correction_requests = [
+        # add: day_of_the_weekとwork_statusを追加する
+        correction_records = [
             {
-                "correction_record_id": correction_request[0],
-                "employee_id": correction_request[1],
-                "work_date": correction_request[2],
-                "start_work_at": correction_request[3],
-                "finish_work_at": correction_request[4],
-                "start_break_at": correction_request[5],
-                "finish_break_at": correction_request[6],
-                "start_overtime_work_at": correction_request[7],
-                "finish_overtime_work_at": correction_request[8],
-                "workplace": correction_request[9],
-                "work_content": correction_request[10],
-            }
-            for correction_request in data
+                "correction_record_id": correction_record[0],
+                "employee_id": correction_record[1],
+                "work_date": correction_record[2],
+                "start_work_at": correction_record[3],
+                "finish_work_at": correction_record[4],
+                "start_break_at": correction_record[5],
+                "finish_break_at": correction_record[6],
+                "start_overwork_at": correction_record[7],
+                "finish_overwork_at": correction_record[8],
+                "workplace": correction_record[9],
+                "work_contents": correction_record[10],
+            } for correction_record in data
         ]
 
         return {
-            "correction_requests": correction_requests,
+            "year": year,
+            "month": month,
+            "correction_records": correction_records
         }
 
     def approve_correction(self, company_id, correction_record_id):
         # 修正依頼を承認する
+        status = "APPROVED"
+        confirmed_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         sql = "UPDATE correction_records\
-                SET status = APPROVED, comfirmed_at = NOW()\
+                SET status = %s, confirmed_at = %s\
                 WHERE company_id = %s AND correction_record_id = %s"
-        self.execute_query(sql, (company_id, correction_record_id))
+        self.execute_query(sql, (status, confirmed_at, company_id, correction_record_id))
         return {
+            "status": status,
             "correction_record_id": correction_record_id,
         }
 
     def reject_correction(self, company_id, correction_record_id, reject_reason):
         # 修正依頼を却下する
+        status = "REJECTED"
+        confirmed_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         sql = "UPDATE correction_records\
-                SET status = REJECTED, comfirmed_at = NOW(), reject_reason = %s\
+                SET status = %s, confirmed_at = %s, reject_reason = %s\
                 WHERE company_id = %s AND correction_record_id = %s"
-        self.execute_query(sql, (reject_reason, company_id, correction_record_id))
+        self.execute_query(sql, (status, confirmed_at, reject_reason, company_id, correction_record_id))
         return {
+            "status": status,
             "correction_record_id": correction_record_id,
         }
 
@@ -477,7 +486,7 @@ class Models():
     def approve_paid_leave(self, company_id, paid_leave_record_id):
         # 有給休暇申請を承認する
         sql = "UPDATE paid_leaves_records\
-                SET status = APPROVED, comfirmed_at = NOW()\
+                SET status = APPROVED, confirmed_at = NOW()\
                 WHERE company_id = %s AND paid_leaves_record_id = %s"
         self.execute_query(sql, (company_id, paid_leave_record_id))
 
@@ -506,7 +515,7 @@ class Models():
     def reject_paid_leave(self, company_id, paid_leave_record_id, reject_reason):
         # 有給休暇申請を却下する
         sql = "UPDATE paid_leaves_records\
-                SET status = REJECTED, reject_reason = %s, comfirmed_at = NOW()\
+                SET status = REJECTED, reject_reason = %s, confirmed_at = NOW()\
                 WHERE company_id = %s AND paid_leaves_record_id = %s"
         self.execute_query(sql, (reject_reason, company_id, paid_leave_record_id))
 
@@ -726,11 +735,49 @@ class Models():
     def request_correction(self, company_id, employee_id, work_date, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_contents):
         # 修正依頼をする
         sql = "INSERT INTO correction_records (\
-                company_id, employee_id, work_date, start_work_at, finish_work_at, start_break_at,\
-                finish_break_at, start_overwork_at, finish_overwork_at, workplace,\
-                work_contents, status, confirmed_at, reject_reason)\
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        self.execute_query(sql, (company_id, employee_id, work_date, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_contents, "REQUESTED", None, None))
+                company_id, employee_id, work_date, "
+        variables = [company_id, employee_id, work_date]
+        values = "VALUES (%s, %s, %s, "
+        if start_work_at != "":
+            # sqlの最後にstart_work_atを追加する
+            sql += "start_work_at,"
+            values += "%s,"
+            variables.append(start_work_at)
+        if finish_work_at != "":
+            sql += "finish_work_at,"
+            values += "%s,"
+            variables.append(finish_work_at)
+        if start_break_at != "":
+            sql += "start_break_at,"
+            values += "%s,"
+            variables.append(start_break_at)
+        if finish_break_at != "":
+            sql += "finish_break_at,"
+            values += "%s,"
+            variables.append(finish_break_at)
+        if start_overtime_work_at != "":
+            sql += "start_overwork_at,"
+            values += "%s,"
+            variables.append(start_overtime_work_at)
+        if finish_overtime_work_at != "":
+            sql += "finish_overwork_at,"
+            values += "%s,"
+            variables.append(finish_overtime_work_at)
+        if workplace != "":
+            sql += "workplace,"
+            values += "%s,"
+            variables.append(workplace)
+        if work_contents != "":
+            sql += "work_contents,"
+            values += "%s,"
+            variables.append(work_contents)
+        sql += "status, confirmed_at, reject_reason) "
+        values += "%s, %s, %s)"
+        variables.append("REQUESTED")
+        variables.append(None)
+        variables.append(None)
+        sql += values
+        self.execute_query(sql, variables)
 
         return {
             "work_date": work_date,
@@ -742,33 +789,6 @@ class Models():
             "finish_overtime_work_at": finish_overtime_work_at,
             "workplace": workplace,
             "work_contents": work_contents
-        }
-
-    def get_request_correction(self, company_id, employee_id, year, month):
-        # 月ごとの修正依頼を取得する
-        return {
-            "year": year,
-            "month": month,
-            "correction_requests": [
-                {
-                    "correction_date": "2020-01-15",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                    "is_approved": True,
-                    "approved_at": "2020-01-16 09:00:00"
-                },
-                {
-                    "correction_date": "2020-01-16",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                    "is_approved": False,
-                    "rejected_at": "2020-01-16 09:00:00",
-                    "rejected_reason": "出勤時間が10時であることが確認できませんでした。"
-                },
-                {
-                    "correction_date": "2020-01-16",
-                    "correction_contents": "出勤時間が9時ではなく10時でした。",
-                    "is_approved": None
-                }
-            ]
         }
 
     def request_paid_leave(self, company_id, employee_id, start_paid_leave_at, finish_paid_leave_at):
