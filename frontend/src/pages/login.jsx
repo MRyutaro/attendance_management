@@ -23,7 +23,7 @@ const Login = () => {
     if (data.success) {
       router.push("/", "home");
     } else {
-      alert("ログインに失敗しましたね");
+      alert("ログインに失敗しました");
     }
   };
 
