@@ -15,7 +15,7 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "prod"
+        MODE = "dev"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
@@ -127,7 +127,7 @@ class Models():
                 # カレンダーテーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS calendar (\
                         company_id INTEGER,\
-                        date TIMESTAMP,\
+                        date DATE,\
                         day_of_the_week DAY_OF_THE_WEEK,\
                         work_type WORK_TYPE,\
                         PRIMARY KEY (company_id, date),\
@@ -232,7 +232,7 @@ class Models():
             conn.commit()
 
     ######################################################################################
-    # ここから管理者用
+    # 管理者だけができる操作
     ######################################################################################
     def add_company(self, company_name, company_email, company_login_password):
         # 会社を追加する
@@ -580,10 +580,15 @@ class Models():
         }
 
     ######################################################################################
-    # 従業員ができる操作
+    # 全員ができる操作
     ######################################################################################
 
-    def login(self, company_id, employee_email, employee_login_password):
+    def get_token(self, company_id, employee_email, employee_login_password):
+        # トークンを取得する
+        # fix: パスワードを暗号化する
+        pass
+
+    def login(self, company_id, employee_email, employee_login_password, token):
         # ログインする
         # fix: パスワードを暗号化する
         # fix: セッションを作成する
@@ -760,6 +765,9 @@ class Models():
         }
 
     def get_monthly_work_records(self, company_id, employee_id, year, month):
+        # fix: dateとcompany_idで、calendarとwork_calendarを結合する
+        # fix: work_dateはwork_calendarから取得する
+        # fix: 結合したものからemployee_id, year, monthで絞り込み、work_dateでソートする
         # 月別勤怠情報を取得する
         sql = "SELECT work_date, start_work_at, finish_work_at, start_break_at,\
                     finish_break_at, start_overwork_at, finish_overwork_at, workplace, work_contents\

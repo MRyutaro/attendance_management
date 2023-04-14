@@ -1,11 +1,16 @@
 import datetime
 
+from fastapi import FastAPI, Depends
+from fastapi.security import OAuth2PasswordBearer
 import uvicorn
-from fastapi import FastAPI
+
 from models import Models
 
 app = FastAPI()
 models = Models()
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 api_root = "/api/v1"
 port = 8000
@@ -22,7 +27,7 @@ def api():
 
 
 ######################################################################################
-# adminができる操作
+# adminだけができる操作
 ######################################################################################
 
 # 会社を追加する
@@ -112,13 +117,19 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int, reject_reason:
 
 
 ######################################################################################
-# memberができる操作
+# 全員ができる操作
 ######################################################################################
+
+# トークンを取得する
+@app.post(api_root + "/token")
+def get_token(company_id: int, employee_email: str, employee_login_password: str):
+    return models.get_token(company_id, employee_email, employee_login_password)
+
 
 # ログインする
 @app.post(api_root + "/login")
-def login(company_id: int, employee_email: str, employee_login_password: str):
-    return models.login(company_id, employee_email, employee_login_password)
+def login(company_id: int, employee_email: str, employee_login_password: str, token: str = Depends(oauth2_scheme)):
+    return models.login(company_id, employee_email, employee_login_password, token)
 
 
 # ログアウトする
