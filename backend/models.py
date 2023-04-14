@@ -105,7 +105,7 @@ class Models():
             conn.commit()
             with conn.cursor() as cursor:
                 # work_statusのenumを作成
-                sql = "CREATE TYPE WORK_TYPE AS ENUM ('DAY_OFF', 'WORKDAY', 'HOLIDAY', 'ALL_DAY_LEAVES', 'MORNING_LEAVES', 'AFTERNOON_LEAVES')"
+                sql = "CREATE TYPE WORK_TYPE AS ENUM ('DAY_OFF', 'WORKDAY', 'HOLIDAY', 'ALL_DAY_LEAVE', 'MORNING_LEAVE', 'AFTERNOON_LEAVE')"
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
@@ -204,16 +204,17 @@ class Models():
             with conn.cursor() as cursor:
                 # 有休申請記録テーブルを作成
                 sql = "CREATE TABLE IF NOT EXISTS paid_leaves_records (\
-                        paid_leave_id SERIAL PRIMARY KEY,\
+                        paid_leave_record_id SERIAL PRIMARY KEY,\
                         company_id INTEGER,\
                         employee_id INTEGER,\
                         paid_leave_date DATE,\
                         work_type WORK_TYPE,\
+                        paid_leave_reason VARCHAR(50),\
                         requested_at TIMESTAMP,\
                         status STATUS,\
                         confirmed_at TIMESTAMP,\
                         reject_reason VARCHAR(50),\
-                        UNIQUE (company_id, paid_leave_id),\
+                        UNIQUE (company_id, paid_leave_record_id),\
                         FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
                 cursor.execute(sql)
             conn.commit()
@@ -223,8 +224,8 @@ class Models():
                         company_id INTEGER,\
                         employee_id INTEGER,\
                         year INTEGER,\
-                        max_paid_leaves_days FLOAT,\
-                        used_paid_leaves_days FLOAT,\
+                        max_paid_leave_days FLOAT,\
+                        used_paid_leave_days FLOAT,\
                         UNIQUE (company_id, employee_id, year),\
                         FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
                 cursor.execute(sql)
@@ -423,23 +424,24 @@ class Models():
 
     def get_paid_leaves_records(self, company_id, year, month):
         # 有給休暇申請を取得する
-        sql = "SELECT paid_leaves_record_id, employee_id, paid_leave_date, work_type, paid_leaves_reason,\
-                requested_at\
+        sql = "SELECT paid_leave_record_id, employee_id, paid_leave_date,\
+                    work_type, paid_leave_reason, requested_at, status\
                 FROM paid_leaves_records\
                 WHERE company_id = %s AND EXTRACT(YEAR FROM requested_at) = %s\
-                    AND EXTRACT(MONTH FROM requested_at) = %s AND status = REQUESTED"
+                    AND EXTRACT(MONTH FROM requested_at) = %s"
         data = self.execute_query(sql, (company_id, year, month))
 
         paid_leaves_records = [
             {
-                "paid_leaves_record_id": paid_leaves_record[0],
-                "employee_id": paid_leaves_record[1],
-                "paid_leave_date": paid_leaves_record[2],
-                "work_type": paid_leaves_record[3],
-                "paid_leaves_reason": paid_leaves_record[4],
-                "requested_at": paid_leaves_record[5],
+                "paid_leave_record_id": paid_leave_record[0],
+                "employee_id": paid_leave_record[1],
+                "paid_leave_date": paid_leave_record[2],
+                "work_type": paid_leave_record[3],
+                "paid_leave_reason": paid_leave_record[4],
+                "requested_at": paid_leave_record[5],
+                "status": paid_leave_record[6],
             }
-            for paid_leaves_record in data
+            for paid_leave_record in data
         ]
 
         return {
@@ -448,65 +450,119 @@ class Models():
 
     def get_paid_leaves_days(self, company_id, year):
         # 有給休暇日数の情報を取得する
-        sql = "SELECT employee_id, max_paid_leaves_days, used_paid_leaves_days\
+        sql = "SELECT employee_id, max_paid_leave_days, used_paid_leave_days\
                 FROM paid_leaves_days\
-                WHERE company_id = %s AND EXTRACT(YEAR FROM year) = %s"
+                WHERE company_id = %s AND year = %s"
         data = self.execute_query(sql, (company_id, year))
 
         paid_leaves_days = [
             {
-                "employee_id": paid_leaves_day[0],
-                "max_paid_leaves_days": paid_leaves_day[1],
-                "used_paid_leaves_days": paid_leaves_day[2],
-                "remaining_paid_leaves_days": paid_leaves_day[1] - paid_leaves_day[2],
+                "employee_id": paid_leave_day[0],
+                "max_paid_leave_days": paid_leave_day[1],
+                "used_paid_leave_days": paid_leave_day[2],
+                "remaining_paid_leave_days": paid_leave_day[1] - paid_leave_day[2],
             }
-            for paid_leaves_day in data
+            for paid_leave_day in data
         ]
 
         return {
             "paid_leaves_days": paid_leaves_days,
         }
 
-    def set_remaining_paid_leaves_days(self, company_id, employee_id, year, max_paid_leaves_days):
-        # 残り有給休暇日数を設定する
-        # 一気に設定する
-        sql = "INSERT INTO paid_leaves_days (\
-                company_id, employee_id, year, max_paid_leaves_days, used_paid_leaves_days)\
-                VALUES (%s, %s, %s, %s, 0)"
-        self.execute_query(sql, (company_id, employee_id, year, max_paid_leaves_days))
+    def set_remaining_paid_leave_days(self, company_id, employee_id, year, max_paid_leaves_days):
+        # もし(company_id, employee_id, year)の組み合わせが存在しないなら、新しく作成する
+        sql = "SELECT employee_id , employee_id, year\
+                FROM paid_leaves_days\
+                WHERE company_id = %s AND employee_id = %s AND year = %s"
+        data = self.execute_query(sql, (company_id, employee_id, year))
+        if len(data) == 0:
+            sql = "INSERT INTO paid_leaves_days\
+                    (company_id, employee_id, year, max_paid_leave_days, used_paid_leave_days)\
+                    VALUES (%s, %s, %s, %s, %s)"
+            self.execute_query(sql, (company_id, employee_id, year, max_paid_leaves_days, 0))
+        else:
+            sql = "UPDATE paid_leaves_days\
+                    SET max_paid_leave_days = %s, used_paid_leave_days = %s\
+                    WHERE company_id = %s AND employee_id = %s AND year = %s"
+            self.execute_query(sql, (max_paid_leaves_days, 0, company_id, employee_id, year))
 
         return {
             "employee_id": employee_id,
             "year": year,
             "max_paid_leaves_days": max_paid_leaves_days,
-            "used_paid_leaves_days": 0,
-            "remaining_paid_leaves_days": max_paid_leaves_days,
+            "used_paid_leave_days": 0,
+            "remaining_paid_leave_days": max_paid_leaves_days,
         }
 
     def approve_paid_leave(self, company_id, paid_leave_record_id):
         # 有給休暇申請を承認する
+        # もしstatusがAPPROVEDなら、何もしない
+        sql = "SELECT status FROM paid_leaves_records\
+                WHERE company_id = %s AND paid_leave_record_id = %s"
+        data = self.execute_query(sql, (company_id, paid_leave_record_id))
+        if data[0][0] == "APPROVED" or data[0][0] == "REJECTED":
+            return {
+                "error": "すでに確認されています。"
+            }
+
+        # もしmax_paid_leave_days - used_paid_leave_daysを取得
+        sql = "SELECT max_paid_leave_days - used_paid_leave_days\
+                FROM paid_leaves_days\
+                WHERE company_id = %s\
+                    AND employee_id = (\
+                        SELECT employee_id\
+                        FROM paid_leaves_records\
+                        WHERE company_id = %s AND paid_leave_record_id = %s)\
+                    AND year = EXTRACT(YEAR FROM (\
+                        SELECT paid_leave_date\
+                        FROM paid_leaves_records\
+                        WHERE company_id = %s AND paid_leave_record_id = %s))"
+        data = self.execute_query(sql, (company_id, company_id, paid_leave_record_id, company_id, paid_leave_record_id))
+        remaining_paid_leave_days = data[0][0]
+        sql = "SELECT work_type FROM paid_leaves_records\
+                WHERE company_id = %s AND paid_leave_record_id = %s"
+        data = self.execute_query(sql, (company_id, paid_leave_record_id))
+        work_type = data[0][0]
+        if work_type == "ALL_DAYS_LEAVES":
+            remaining_paid_leave_days -= 1
+        elif work_type == "MORNING_LEAVE" or work_type == "AFTERNOON_LEAVE":
+            remaining_paid_leave_days -= 0.5
+        if remaining_paid_leave_days < 0:
+            return {
+                "error": "有給休暇日数が足りません。"
+            }
+
+        confirmed_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         sql = "UPDATE paid_leaves_records\
-                SET status = APPROVED, confirmed_at = NOW()\
-                WHERE company_id = %s AND paid_leaves_record_id = %s"
-        self.execute_query(sql, (company_id, paid_leave_record_id))
+                SET status = %s, confirmed_at = %s\
+                WHERE company_id = %s AND paid_leave_record_id = %s"
+        self.execute_query(sql, ("APPROVED", confirmed_at, company_id, paid_leave_record_id))
 
         # ここで、残り有給休暇日数を減らす。
-        # もしwork_typeがALL_DAYS_LEAVESなら、used_paid_leaves_daysを1増やす
-        # MORNING_LEAVES, AFTERNOON_LEAVESなら、used_paid_leaves_daysを0.5増やす
+        # もしwork_typeがALL_DAYS_LEAVESなら、used_paid_leave_daysを1増やす
+        # MORNING_LEAVE, AFTERNOON_LEAVEなら、used_paid_leave_daysを0.5増やす
         # paid_leaves_recordsからpaid_leave_dateの年を取得して、yearに入れる
         sql = "UPDATE paid_leaves_days\
-                SET used_paid_leaves_days = used_paid_leaves_days +\
-                    (SELECT CASE WHEN work_type = 'ALL_DAYS_LEAVES' THEN 1\
-                            WHEN work_type = 'MORNING_LEAVES' THEN 0.5\
-                            WHEN work_type = 'AFTERNOON_LEAVES' THEN 0.5\
+                SET used_paid_leave_days = used_paid_leave_days +\
+                    (SELECT CASE WHEN work_type = %s THEN 1\
+                            WHEN work_type = %s THEN 0.5\
+                            WHEN work_type = %s THEN 0.5\
                             ELSE 0 END\
                         FROM paid_leaves_records\
-                        WHERE company_id = %s AND paid_leaves_record_id = %s)\
-                WHERE company_id = %s AND employee_id = %s AND\
-                    year = (SELECT EXTRACT(YEAR FROM paid_leave_date)\
+                        WHERE company_id = %s AND paid_leave_record_id = %s)\
+                WHERE company_id = %s\
+                    AND employee_id =(\
+                        SELECT employee_id\
                         FROM paid_leaves_records\
-                        WHERE company_id = %s AND paid_leaves_record_id = %s)"
-        self.execute_query(sql, (company_id, paid_leave_record_id, company_id, paid_leave_record_id))
+                        WHERE company_id = %s AND paid_leave_record_id = %s)\
+                    AND year = (\
+                        SELECT EXTRACT(YEAR FROM paid_leave_date)\
+                        FROM paid_leaves_records\
+                        WHERE company_id = %s AND paid_leave_record_id = %s)"
+        self.execute_query(sql, (
+            "ALL_DAY_LEAVE", "MORNING_LEAVE", "AFTERNOON_LEAVE",
+            company_id, paid_leave_record_id, company_id,
+            company_id, paid_leave_record_id, company_id, paid_leave_record_id))
 
         return {
             "paid_leave_record_id": paid_leave_record_id,
@@ -516,7 +572,7 @@ class Models():
         # 有給休暇申請を却下する
         sql = "UPDATE paid_leaves_records\
                 SET status = REJECTED, reject_reason = %s, confirmed_at = NOW()\
-                WHERE company_id = %s AND paid_leaves_record_id = %s"
+                WHERE company_id = %s AND paid_leave_record_id = %s"
         self.execute_query(sql, (reject_reason, company_id, paid_leave_record_id))
 
         return {
@@ -791,37 +847,77 @@ class Models():
             "work_contents": work_contents
         }
 
-    def request_paid_leave(self, company_id, employee_id, start_paid_leave_at, finish_paid_leave_at):
+    def request_paid_leave(self, company_id, employee_id, paid_leave_date, work_type, paid_leave_reason):
         # 有給休暇申請をする
-        # fix: ここは時間指定じゃなくて日付指定+全休or半休でいいかも
+        # もし、max_paid_leave_days-used_paid_leave_daysが0の場合、エラーを返す
+        sql = "SELECT max_paid_leave_days, used_paid_leave_days FROM paid_leaves_days WHERE company_id = %s AND employee_id = %s"
+        data = self.execute_query(sql, (company_id, employee_id))
+        max_paid_leave_days = data[0][0]
+        used_paid_leave_days = data[0][1]
+        if max_paid_leave_days - used_paid_leave_days == 0:
+            return {
+                "error": "有休がありません。"
+            }
+
+        requested_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        sql = "INSERT INTO paid_leaves_records (\
+                company_id, employee_id, paid_leave_date,\
+                work_type, paid_leave_reason,\
+                requested_at, status,\
+                confirmed_at, reject_reason)\
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        self.execute_query(sql, (company_id, employee_id, paid_leave_date, work_type, paid_leave_reason, requested_at, "REQUESTED", None, None))
+
         return {
-            "start_paid_leave_at": start_paid_leave_at,
-            "finish_paid_leave_at": finish_paid_leave_at,
-            "paid_leave_reason": "病気のため"
+            "paid_leave_date": paid_leave_date,
+            "work_type": work_type,
+            "requested_at": requested_at,
+            "paid_leave_reason": paid_leave_reason
         }
 
     def get_my_paid_leaves_records(self, company_id, employee_id, year, month):
         # 月ごと有給休暇申請を取得する
+        sql = "SELECT paid_leave_record_id, paid_leave_date, work_type, paid_leave_reason,\
+                    requested_at, status, confirmed_at, reject_reason\
+                FROM paid_leaves_records\
+                WHERE company_id = %s AND employee_id = %s AND EXTRACT(YEAR FROM paid_leave_date) = %s AND EXTRACT(MONTH FROM paid_leave_date) = %s"
+        data = self.execute_query(sql, (company_id, employee_id, year, month))
+
+        paid_leaves_records = [
+            {
+                "paid_leave_record_id": paid_leave_record[0],
+                "paid_leave_date": paid_leave_record[1],
+                "work_type": paid_leave_record[2],
+                "paid_leave_reason": paid_leave_record[3],
+                "requested_at": paid_leave_record[4],
+                "status": paid_leave_record[5],
+                "confirmed_at": paid_leave_record[6],
+                "reject_reason": paid_leave_record[7],
+            } for paid_leave_record in data
+        ]
+
         return {
-            "paid_leaves_records": [
-                {
-                    "start_paid_leave_at": "2020-01-01 09:00:00",
-                    "finish_paid_leave_at": "2020-01-01 18:00:00",
-                    "is_approved": True,
-                    "approved_at": "2020-01-02 09:00:00"
-                },
-                {
-                    "start_paid_leave_at": "2020-01-02 09:00:00",
-                    "finish_paid_leave_at": "2020-01-02 18:00:00",
-                    "is_approved": False,
-                    "rejected_at": "2020-01-02 09:00:00",
-                    "rejected_reason": "有給休暇の残日数が不足しています。"
-                }
-            ]
+            "year": year,
+            "month": month,
+            "paid_leaves_records": paid_leaves_records
         }
 
-    def get_my_remaining_paid_leaves_days(self, company_id, employee_id):
+    def get_my_paid_leave_days(self, company_id, employee_id, year):
         # 残り有給休暇日数を取得する
+        sql = "SELECT max_paid_leave_days, used_paid_leave_days, max_paid_leave_days-used_paid_leave_days\
+                FROM paid_leaves_days\
+                WHERE company_id = %s AND employee_id = %s AND year = %s"
+        data = self.execute_query(sql, (company_id, employee_id, year))
+
+        paid_leave_days = [
+            {
+                "max_paid_leave_days": paid_leave_day[0],
+                "used_paid_leave_days": paid_leave_day[1],
+                "remaining_paid_leave_days": paid_leave_day[2]
+            } for paid_leave_day in data
+        ]
+
         return {
-            "remaining_paid_leaves_days": 10
+            "year": year,
+            "paid_leave_days": paid_leave_days
         }
