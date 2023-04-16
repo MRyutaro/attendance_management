@@ -102,51 +102,102 @@ class Models():
         # テーブルを作成する
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
-                # work_statusのenumを作成
+                # WORK_TYPEのenumが存在するか確認
                 sql = """
-                    CREATE TYPE WORK_TYPE AS ENUM (
-                        'DAY_OFF', 'WORKDAY', 'HOLIDAY', 'ALL_DAY_LEAVE', 'MORNING_LEAVE', 'AFTERNOON_LEAVE'
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'WORK_TYPE'
                     )
                 """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # WORK_TYPEのenumを作成
+                    sql = """
+                        CREATE TYPE WORK_TYPE AS ENUM (
+                            'DAY_OFF', 'WORKDAY', 'HOLIDAY', 'ALL_DAY_LEAVE', 'MORNING_LEAVE', 'AFTERNOON_LEAVE'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
             with conn.cursor() as cursor:
-                # workpalceのenumを作成
+                # workpalceのenumが存在するか確認
                 sql = """
-                    CREATE TYPE WORKPLACE AS ENUM (
-                        'OFFICE', 'HOME', 'OTHER'
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'WORKPLACE'
                     )
                 """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # workpalceのenumを作成
+                    sql = """
+                        CREATE TYPE WORKPLACE AS ENUM (
+                            'OFFICE', 'HOME', 'OTHER'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
             with conn.cursor() as cursor:
-                # statusのenumを作成
+                # statusのenumが存在するか確認
                 sql = """
-                    CREATE TYPE STATUS AS ENUM (
-                        'REQUESTED', 'APPROVED', 'REJECTED'
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'STATUS'
                     )
                 """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # statusのenumを作成
+                    sql = """
+                        CREATE TYPE STATUS AS ENUM (
+                            'REQUESTED', 'APPROVED', 'REJECTED'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
             with conn.cursor() as cursor:
-                # authorityのenumを作成
+                # authorityのenumが存在するか確認
                 sql = """
-                    CREATE TYPE AUTHORITY AS ENUM (
-                        'ADMIN', 'USER'
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'AUTHORITY'
                     )
                 """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # authorityのenumを作成
+                    sql = """
+                        CREATE TYPE AUTHORITY AS ENUM (
+                            'ADMIN', 'USER'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
+
             with conn.cursor() as cursor:
                 # カレンダーテーブルを作成
                 sql = """
                     CREATE TABLE IF NOT EXISTS calendar (
-                        company_id INTEGER,
                         date DATE,
-                        day_of_the_week DAY_OF_THE_WEEK,
+                        dow int,
                         work_type WORK_TYPE,
-                        PRIMARY KEY (company_id, date),
-                        FOREIGN KEY (company_id) REFERENCES companies(company_id)
+                        PRIMARY KEY (date)
                     )
                 """
                 cursor.execute(sql)
@@ -289,6 +340,21 @@ class Models():
         self.create_other_tables()
 
         # add: calendarに日付と曜日を追加する
+        sql = """
+            INSERT INTO calendar (date, dow, work_type)
+            SELECT
+                calendar_date,
+                EXTRACT(ISODOW FROM calendar_date),
+                CASE
+                    WHEN EXTRACT(ISODOW FROM calendar_date) = 6 THEN 'DAY_OFF'::WORK_TYPE
+                    WHEN EXTRACT(ISODOW FROM calendar_date) = 7 THEN 'DAY_OFF'::WORK_TYPE
+                    ELSE 'WORKDAY'::WORK_TYPE
+                END
+            FROM
+                generate_series(current_date::DATE, current_date::DATE + '1 year'::INTERVAL, '1 day') AS calendar_date
+            ;
+        """
+        self.execute_query(sql)
 
         return {
             "company_id": data[0],
