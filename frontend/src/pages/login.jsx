@@ -4,23 +4,24 @@ import Link from "next/link";
 
 const Login = () => {
   const router = useRouter();
-  const [useremail, setUseremail] = useState("");
-  const [userpassword, setPassword] = useState("");
+  const [employee_email, setUseremail] = useState("");
+  const [employee_login_password, setPassword] = useState("");
 
   const clickHandler = async (event) => {
     event.preventDefault();
-    const response = await fetch("/api/login", {
+    const response = await fetch("http://localhost:8000/api/v1/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        useremail,
-        userpassword,
+        company_id: 1,
+        employee_email,
+        employee_login_password,
       }),
     });
     const data = await response.json();
-    if (data.success) {
+    if (data.is_active) {
       router.push("/", "home");
     } else {
       alert("ログインに失敗しました？");
@@ -49,7 +50,7 @@ const Login = () => {
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="Email or Username"
-                  value={useremail}
+                  value={employee_email}
                   onChange={(event) => setUseremail(event.target.value)}
                 />
               </div>
@@ -66,7 +67,7 @@ const Login = () => {
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="Password"
-                  value={userpassword}
+                  value={employee_login_password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
               </div>
