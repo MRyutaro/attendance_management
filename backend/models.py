@@ -15,7 +15,7 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "prod"
+        MODE = "dev"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
@@ -86,12 +86,15 @@ class Models():
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
                 # 会社テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS companies (\
-                company_id SERIAL PRIMARY KEY,\
-                company_name VARCHAR(30),\
-                company_email VARCHAR(30) UNIQUE,\
-                company_login_password VARCHAR(30),\
-                UNIQUE (company_id, company_email))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS companies (
+                        company_id SERIAL PRIMARY KEY,
+                        company_name VARCHAR(30),
+                        company_email VARCHAR(30) UNIQUE,
+                        company_login_password VARCHAR(30),
+                        UNIQUE (company_id, company_email)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
 
@@ -99,140 +102,223 @@ class Models():
         # テーブルを作成する
         with self.get_connection() as conn:
             with conn.cursor() as cursor:
-                # day_of_the_weekのenumを作成
-                sql = "CREATE TYPE DAY_OF_THE_WEEK AS ENUM ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN')"
+                # WORK_TYPEのenumが存在するか確認
+                sql = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'WORK_TYPE'
+                    )
+                """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # WORK_TYPEのenumを作成
+                    sql = """
+                        CREATE TYPE WORK_TYPE AS ENUM (
+                            'DAY_OFF', 'WORKDAY', 'HOLIDAY', 'ALL_DAY_LEAVE', 'MORNING_LEAVE', 'AFTERNOON_LEAVE'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
             with conn.cursor() as cursor:
-                # work_statusのenumを作成
-                sql = "CREATE TYPE WORK_TYPE AS ENUM ('DAY_OFF', 'WORKDAY', 'HOLIDAY', 'ALL_DAY_LEAVE', 'MORNING_LEAVE', 'AFTERNOON_LEAVE')"
+                # workpalceのenumが存在するか確認
+                sql = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'WORKPLACE'
+                    )
+                """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # workpalceのenumを作成
+                    sql = """
+                        CREATE TYPE WORKPLACE AS ENUM (
+                            'OFFICE', 'HOME', 'OTHER'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
             with conn.cursor() as cursor:
-                # workpalceのenumを作成
-                sql = "CREATE TYPE WORKPLACE AS ENUM ('OFFICE', 'HOME', 'OTHER')"
+                # statusのenumが存在するか確認
+                sql = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'STATUS'
+                    )
+                """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # statusのenumを作成
+                    sql = """
+                        CREATE TYPE STATUS AS ENUM (
+                            'REQUESTED', 'APPROVED', 'REJECTED'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
             with conn.cursor() as cursor:
-                # statusのenumを作成
-                sql = "CREATE TYPE STATUS AS ENUM ('REQUESTED', 'APPROVED', 'REJECTED')"
+                # authorityのenumが存在するか確認
+                sql = """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM pg_type
+                        WHERE typname = 'AUTHORITY'
+                    )
+                """
+                type_exists = cursor.execute(sql)
                 cursor.execute(sql)
             conn.commit()
-            with conn.cursor() as cursor:
-                # authorityのenumを作成
-                sql = "CREATE TYPE AUTHORITY AS ENUM ('ADMIN', 'USER')"
-                cursor.execute(sql)
-            conn.commit()
+            if not type_exists:
+                with conn.cursor() as cursor:
+                    # authorityのenumを作成
+                    sql = """
+                        CREATE TYPE AUTHORITY AS ENUM (
+                            'ADMIN', 'USER'
+                        )
+                    """
+                    cursor.execute(sql)
+                conn.commit()
+
             with conn.cursor() as cursor:
                 # カレンダーテーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS calendar (\
-                        company_id INTEGER,\
-                        date TIMESTAMP,\
-                        day_of_the_week DAY_OF_THE_WEEK,\
-                        work_type WORK_TYPE,\
-                        PRIMARY KEY (company_id, date),\
-                        FOREIGN KEY (company_id) REFERENCES companies(company_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS calendar (
+                        date DATE,
+                        dow int,
+                        work_type WORK_TYPE,
+                        PRIMARY KEY (date)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 従業員テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS employees (\
-                        company_id INTEGER,\
-                        employee_id SERIAL,\
-                        employee_name VARCHAR(30),\
-                        employee_email VARCHAR(30),\
-                        employee_login_password VARCHAR(30),\
-                        authority AUTHORITY,\
-                        commuting_expenses INTEGER,\
-                        UNIQUE (company_id, employee_id),\
-                        UNIQUE (company_id, employee_email),\
-                        FOREIGN KEY (company_id) REFERENCES companies(company_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS employees (
+                        company_id INTEGER,
+                        employee_id SERIAL,
+                        employee_name VARCHAR(30),
+                        employee_email VARCHAR(30),
+                        employee_login_password VARCHAR(30),
+                        authority AUTHORITY,
+                        commuting_expenses INTEGER,
+                        UNIQUE (company_id, employee_id),
+                        UNIQUE (company_id, employee_email),
+                        FOREIGN KEY (company_id) REFERENCES companies(company_id)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 勤怠記録テーブルを作成
                 # delete: work_record_idはいらないかも
-                sql = "CREATE TABLE IF NOT EXISTS work_records (\
-                        work_record_id SERIAL PRIMARY KEY,\
-                        company_id INTEGER,\
-                        employee_id INTEGER,\
-                        work_date DATE,\
-                        start_work_at TIME,\
-                        finish_work_at TIME,\
-                        start_break_at TIME,\
-                        finish_break_at TIME,\
-                        start_overwork_at TIME,\
-                        finish_overwork_at TIME,\
-                        workplace WORKPLACE,\
-                        work_contents VARCHAR(50),\
-                        UNIQUE (company_id, employee_id, work_date),\
-                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS work_records (
+                        work_record_id SERIAL PRIMARY KEY,
+                        company_id INTEGER,
+                        employee_id INTEGER,
+                        work_date DATE,
+                        start_work_at TIME,
+                        finish_work_at TIME,
+                        start_break_at TIME,
+                        finish_break_at TIME,
+                        start_overwork_at TIME,
+                        finish_overwork_at TIME,
+                        workplace WORKPLACE,
+                        work_contents VARCHAR(50),
+                        UNIQUE (company_id, employee_id, work_date),
+                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 勤怠修正記録テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS correction_records (\
-                        correction_record_id SERIAL PRIMARY KEY,\
-                        company_id INTEGER,\
-                        employee_id INTEGER,\
-                        work_date TIMESTAMP,\
-                        start_work_at TIME,\
-                        finish_work_at TIME,\
-                        start_break_at TIME,\
-                        finish_break_at TIME,\
-                        start_overwork_at TIME,\
-                        finish_overwork_at TIME,\
-                        workplace WORKPLACE,\
-                        work_contents VARCHAR(50),\
-                        status STATUS,\
-                        confirmed_at TIMESTAMP,\
-                        reject_reason VARCHAR(50),\
-                        UNIQUE (company_id, correction_record_id),\
-                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS correction_records (
+                        correction_record_id SERIAL PRIMARY KEY,
+                        company_id INTEGER,
+                        employee_id INTEGER,
+                        work_date TIMESTAMP,
+                        start_work_at TIME,
+                        finish_work_at TIME,
+                        start_break_at TIME,
+                        finish_break_at TIME,
+                        start_overwork_at TIME,
+                        finish_overwork_at TIME,
+                        workplace WORKPLACE,
+                        work_contents VARCHAR(50),
+                        status STATUS,
+                        confirmed_at TIMESTAMP,
+                        reject_reason VARCHAR(50),
+                        UNIQUE (company_id, correction_record_id),
+                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 有休カレンダーテーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS work_calendars (\
-                        company_id INTEGER,\
-                        employee_id INTEGER,\
-                        date DATE,\
-                        work_type WORK_TYPE,\
-                        UNIQUE (company_id, employee_id, date),\
-                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS paid_leaves (
+                        company_id INTEGER,
+                        employee_id INTEGER,
+                        date DATE,
+                        work_type WORK_TYPE,
+                        UNIQUE (company_id, employee_id, date),
+                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id)
+                    )
+                """
             conn.commit()
             with conn.cursor() as cursor:
                 # 有休申請記録テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS paid_leaves_records (\
-                        paid_leave_record_id SERIAL PRIMARY KEY,\
-                        company_id INTEGER,\
-                        employee_id INTEGER,\
-                        paid_leave_date DATE,\
-                        work_type WORK_TYPE,\
-                        paid_leave_reason VARCHAR(50),\
-                        requested_at TIMESTAMP,\
-                        status STATUS,\
-                        confirmed_at TIMESTAMP,\
-                        reject_reason VARCHAR(50),\
-                        UNIQUE (company_id, paid_leave_record_id),\
-                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS paid_leaves_records (
+                        paid_leave_record_id SERIAL PRIMARY KEY,
+                        company_id INTEGER,
+                        employee_id INTEGER,
+                        paid_leave_date DATE,
+                        work_type WORK_TYPE,
+                        paid_leave_reason VARCHAR(50),
+                        requested_at TIMESTAMP,
+                        status STATUS,
+                        confirmed_at TIMESTAMP,
+                        reject_reason VARCHAR(50),
+                        UNIQUE (company_id, paid_leave_record_id),
+                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
             with conn.cursor() as cursor:
                 # 有休日数テーブルを作成
-                sql = "CREATE TABLE IF NOT EXISTS paid_leaves_days (\
-                        company_id INTEGER,\
-                        employee_id INTEGER,\
-                        year INTEGER,\
-                        max_paid_leave_days FLOAT,\
-                        used_paid_leave_days FLOAT,\
-                        UNIQUE (company_id, employee_id, year),\
-                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id))"
+                sql = """
+                    CREATE TABLE IF NOT EXISTS paid_leaves_days (
+                        company_id INTEGER,
+                        employee_id INTEGER,
+                        year INTEGER,
+                        max_paid_leave_days FLOAT,
+                        used_paid_leave_days FLOAT,
+                        UNIQUE (company_id, employee_id, year),
+                        FOREIGN KEY (company_id, employee_id) REFERENCES employees(company_id, employee_id)
+                    )
+                """
                 cursor.execute(sql)
             conn.commit()
 
     ######################################################################################
-    # ここから管理者用
+    # 管理者だけができる操作
     ######################################################################################
     def add_company(self, company_name, company_email, company_login_password):
         # 会社を追加する
@@ -252,6 +338,23 @@ class Models():
         hidden_company_login_password = "*" * company_login_password_length
 
         self.create_other_tables()
+
+        # add: calendarに日付と曜日を追加する
+        sql = """
+            INSERT INTO calendar (date, dow, work_type)
+            SELECT
+                calendar_date,
+                EXTRACT(ISODOW FROM calendar_date),
+                CASE
+                    WHEN EXTRACT(ISODOW FROM calendar_date) = 6 THEN 'DAY_OFF'::WORK_TYPE
+                    WHEN EXTRACT(ISODOW FROM calendar_date) = 7 THEN 'DAY_OFF'::WORK_TYPE
+                    ELSE 'WORKDAY'::WORK_TYPE
+                END
+            FROM
+                generate_series(current_date::DATE, current_date::DATE + '1 year'::INTERVAL, '1 day') AS calendar_date
+            ;
+        """
+        self.execute_query(sql)
 
         return {
             "company_id": data[0],
@@ -580,8 +683,13 @@ class Models():
         }
 
     ######################################################################################
-    # 従業員ができる操作
+    # 全員ができる操作
     ######################################################################################
+
+    def get_token(self, company_id, employee_email, employee_login_password):
+        # トークンを取得する
+        # fix: パスワードを暗号化する
+        pass
 
     def login(self, company_id, employee_email, employee_login_password):
         # ログインする
@@ -592,6 +700,16 @@ class Models():
                 FROM employees\
                 WHERE company_id = %s AND employee_email = %s"
         data = self.execute_query(sql, (company_id, employee_email))[0]
+        # もし、メールアドレスが違うなら、空の辞書を返す
+        if data is None:
+            return {
+                "company_id": "",
+                "employee_id": "",
+                "employee_email": "",
+                "employee_name": "",
+                "error": "company_id or mail address is wrong",
+                "is_active": False
+            }
         # もし、パスワードが違うなら、空の辞書を返す
         if data[2] != employee_login_password:
             return {
@@ -599,7 +717,7 @@ class Models():
                 "employee_id": "",
                 "employee_email": "",
                 "employee_name": "",
-                "error": "パスワードが違います",
+                "error": "password is wrong",
                 "is_active": False
             }
 
@@ -608,6 +726,7 @@ class Models():
             "employee_id": data[0],
             "employee_email": employee_email,
             "employee_name": data[1],
+            "error": "",
             "is_active": True
         }
 
@@ -761,13 +880,40 @@ class Models():
 
     def get_monthly_work_records(self, company_id, employee_id, year, month):
         # 月別勤怠情報を取得する
-        sql = "SELECT work_date, start_work_at, finish_work_at, start_break_at,\
-                    finish_break_at, start_overwork_at, finish_overwork_at, workplace, work_contents\
-                FROM work_records\
-                WHERE company_id = %s AND employee_id = %s AND EXTRACT(YEAR FROM work_date) = %s AND EXTRACT(MONTH FROM work_date) = %s"
-        data = self.execute_query(sql, (company_id, employee_id, year, month))
-
+        # fix: calendarとpaid_leavesを結合し、それとwork_recordsを結合する
+        # fix: work_dateはpaid_leavesから取得する
+        # fix: 結合したものからemployee_id, year, monthで絞り込み、work_dateでソートする
         # add: day_of_the_weekとwork_statusを追加する
+        sql = """
+            SELECT
+                calendar.date,
+                calendar.day_of_the_week,
+                paid_leaves.work_status,
+                work_records.start_work_at,
+                work_records.finish_work_at,
+                work_records.start_break_at,
+                work_records.finish_break_at,
+                work_records.start_overwork_at,
+                work_records.finish_overwork_at,
+                work_records.workplace,
+                work_records.work_contents
+            FROM calendar
+            LEFT JOIN paid_leaves
+                ON calendar.date = paid_leaves.date AND
+                    calendar.company_id = paid_leaves.company_id AND
+                    paid_leaves.employee_id = %s
+            LEFT JOIN work_records
+                ON calendar.date = work_records.work_date AND
+                    calendar.company_id = work_records.company_id AND
+                    paid_leaves.employee_id = work_records.employee_id
+            WHERE
+                work_records.company_id = %s AND
+                work_records.employee_id = %s AND
+                YEAR(work_records.work_date) = %s AND
+                MONTH(work_records.work_date) = %s
+            ORDER BY calendar.date
+        """
+        data = self.execute_query(sql, (employee_id, company_id, employee_id, year, month))
         work_records = [
             {
                 "work_date": work_record[0],
