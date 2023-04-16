@@ -691,7 +691,7 @@ class Models():
         # fix: パスワードを暗号化する
         pass
 
-    def login(self, company_id, employee_email, employee_login_password, token):
+    def login(self, company_id, employee_email, employee_login_password):
         # ログインする
         # fix: パスワードを暗号化する
         # fix: セッションを作成する
@@ -726,6 +726,7 @@ class Models():
             "employee_id": data[0],
             "employee_email": employee_email,
             "employee_name": data[1],
+            "error": "",
             "is_active": True
         }
 
