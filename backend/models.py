@@ -15,7 +15,7 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "prod"
+        MODE = "dev"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
@@ -634,6 +634,16 @@ class Models():
                 FROM employees\
                 WHERE company_id = %s AND employee_email = %s"
         data = self.execute_query(sql, (company_id, employee_email))[0]
+        # もし、メールアドレスが違うなら、空の辞書を返す
+        if data is None:
+            return {
+                "company_id": "",
+                "employee_id": "",
+                "employee_email": "",
+                "employee_name": "",
+                "error": "company_id or mail address is wrong",
+                "is_active": False
+            }
         # もし、パスワードが違うなら、空の辞書を返す
         if data[2] != employee_login_password:
             return {
@@ -641,7 +651,7 @@ class Models():
                 "employee_id": "",
                 "employee_email": "",
                 "employee_name": "",
-                "error": "パスワードが違います",
+                "error": "password is wrong",
                 "is_active": False
             }
 
