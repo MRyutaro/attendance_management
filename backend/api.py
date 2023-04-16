@@ -1,6 +1,6 @@
 import datetime
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -137,7 +137,13 @@ def get_token(company_id: int, employee_email: str, employee_login_password: str
 # ログインする
 @app.post(api_root + "/login")
 def login(company_id: int, employee_email: str, employee_login_password: str, token: str = Depends(oauth2_scheme)):
-    return models.login(company_id, employee_email, employee_login_password, token)
+    data = models.login(company_id, employee_email, employee_login_password, token)
+    # もしdateにerrorというキーがあれば、それはエラーの内容
+    if data["error"] == "company_id or mail address is wrong.":
+        raise HTTPException(status_code=401, detail=data["会社IDかメールアドレスが間違っている、もしくは登録されていません。"])
+    if data["error"] == "password is wrong.":
+        raise HTTPException(status_code=401, detail=data["パスワードが間違っています。"])
+    return data
 
 
 # ログアウトする
