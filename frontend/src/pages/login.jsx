@@ -8,8 +8,9 @@ const Login = () => {
   const [employee_login_password, setPassword] = useState("");
 
   const clickHandler = async (event) => {
+    const baseUrl = "http://localhost:8000/api/v1";
     event.preventDefault();
-    const response = await fetch("http://localhost:8000/api/v1/login", {
+    const response = await fetch(`${baseUrl}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
