@@ -136,8 +136,8 @@ def get_token(company_id: int, employee_email: str, employee_login_password: str
 
 # ログインする
 @app.post(api_root + "/login")
-def login(company_id: int, employee_email: str, employee_login_password: str, token: str = Depends(oauth2_scheme)):
-    data = models.login(company_id, employee_email, employee_login_password, token)
+def login(company_id: int, employee_email: str, employee_login_password: str):
+    data = models.login(company_id, employee_email, employee_login_password)
     # もしdateにerrorというキーがあれば、それはエラーの内容
     if data["error"] == "company_id or mail address is wrong.":
         raise HTTPException(status_code=401, detail=data["会社IDかメールアドレスが間違っている、もしくは登録されていません。"])
