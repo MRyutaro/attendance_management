@@ -1,30 +1,40 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
+import axios from "axios";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
 const Login = () => {
   const router = useRouter();
   const [employee_email, setUseremail] = useState("");
   const [employee_login_password, setPassword] = useState("");
-
   const clickHandler = async (event) => {
     const baseUrl = "http://localhost:8000/api/v1";
     event.preventDefault();
-    const response = await fetch(`${baseUrl}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        company_id: 1,
-        employee_email,
-        employee_login_password,
-      }),
-    });
-    const data = await response.json();
-    if (data.is_active) {
-      router.push("/", "home");
-    } else {
+
+    try {
+      const response = await axios.post(
+        `${baseUrl}/login`,
+        {
+          company_id: 1,
+          employee_email,
+          employee_login_password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = response.data;
+
+      if (data.is_active) {
+        router.push("/", "home");
+      } else {
+        alert("ログインに失敗しました？");
+      }
+    } catch (error) {
+      console.error(error);
       alert("ログインに失敗しました？");
     }
   };
