@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 
 const Clock = () => {
@@ -8,19 +9,22 @@ const Clock = () => {
   const [isClockInEdited, setIsClockInEdited] = useState(false);
   const [isClockOutEdited, setIsClockOutEdited] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [serverTime, setServerTime] = useState(null);
 
-  let date = now.toLocaleDateString("ja-JP");
-  let time = now.toLocaleTimeString("ja-JP", {
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  let weekday = now.toLocaleDateString("ja-JP", { weekday: "short" });
   useEffect(() => {
-    const interval = setInterval(() => {
+    const intervalId = setInterval(() => {
       setNow(new Date());
     }, 1000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  useEffect(() => {
+    axios.head(window.location.href).then((res) => {
+      setServerTime(new Date(res.headers.date));
+    });
   }, []);
 
   const handleInClick = () => {
@@ -52,55 +56,68 @@ const Clock = () => {
     }
   };
 
+  const date =
+    serverTime?.toLocaleDateString("ja-JP", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) ||
+    now.toLocaleDateString("ja-JP", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  const time =
+    serverTime?.toLocaleTimeString("ja-JP", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    }) ||
+    now.toLocaleTimeString("ja-JP", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   return (
     <>
-      <div className="flex justify-around  ">
-        <div className="flex justify-around flex-col items-center">
-          <div className="flex items-center  text-xl">
-            <p className="digit">{date}</p>
-            <p className="ml-2">({weekday})</p>
-          </div>
-
-          <p suppressHydrationWarning className="text-6xl font-bold">
+      <div className="flex justify-around  items-center">
+        <div className="flex items-center flex-col  text-xl">
+          <p className="digit">{date}</p>
+          <p suppressHydrationWarning className="text-6xl font-bold mt-5">
             {time}
           </p>
         </div>
-        <div className="flex flex-col">
-          <div className="flex flex-row justify-start items-center md:items-start md:justify-around  ">
-            <button onClick={handleInClick} disabled={inIsClicked} className="w-[100px] h-[100px] rounded-full border-2 border-black flex justify-center items-center  text-xl">
-              出勤
-            </button>
+        <div>
+          <div className="flex flex-col">
+            <div className="flex flex-row justify-start items-center md:items-start md:justify-around  ">
+              <button onClick={handleInClick} disabled={inIsClicked} className="w-[100px] h-[100px] rounded-full border-2 border-black flex justify-center items-center  text-xl">
+                出勤
+              </button>
 
-            <button onClick={handleOutClick} disabled={outIsClicked} className="w-[100px] h-[100px] rounded-full border-2 border-black flex justify-center items-center text-xl ml-5">
-              退勤
-            </button>
-          </div>
+              <button onClick={handleOutClick} disabled={outIsClicked} className="w-[100px] h-[100px] rounded-full border-2 border-black flex justify-center items-center text-xl ml-5">
+                退勤
+              </button>
+            </div>
 
-          <div className="flex flex-col mt-5 ml-5 justify-around items-start">
-            <p className="text-sm">
-              出勤時刻：
-              {clockIn.time && (
-                <span>
-                  {clockIn.date} {clockIn.time}
-                  {isClockInEdited && <span>（修正済み）</span>}
-                  <button className={isClockInEdited ? "none" : "ml-5"} onClick={handleClockInEdit} disabled={isClockInEdited}>
-                    修正
-                  </button>
-                </span>
-              )}
-            </p>
-            <p className="text-sm">
-              退勤時刻：
-              {clockOut.time && (
-                <span>
-                  {clockOut.date} {clockOut.time}
-                  {isClockOutEdited && <span>（修正済み）</span>}
-                  <button className={isClockOutEdited ? "none" : "ml-5"} onClick={handleClockOutEdit} disabled={isClockOutEdited}>
-                    修正
-                  </button>
-                </span>
-              )}
-            </p>
+            <div className="flex flex-col mt-5 ml-5 justify-around items-start">
+              <p className="text-sm">
+                出勤時刻：
+                {clockIn.time && (
+                  <span>
+                    {clockIn.date} {clockIn.time}
+                    {isClockInEdited && <span>（修正済み）</span>}
+                    <button className={isClockInEdited ? "none" : "ml-5"} onClick={handleClockInEdit} disabled={isClockInEdited}>
+                      修正
+                    </button>
+                  </span>
+                )}
+              </p>
+              <p className="text-sm">
+                退勤時刻：
+                {clockOut.time && (
+                  <span>
+                    {clockOut.date} {clockOut.time}
+                    {isClockOutEdited && <span>（修正済み）</span>}
+                    <button className={isClockOutEdited ? "none" : "ml-5"} onClick={handleClockOutEdit} disabled={isClockOutEdited}>
+                      修正
+                    </button>
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </div>
