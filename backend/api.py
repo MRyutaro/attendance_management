@@ -1,11 +1,24 @@
 import datetime
 
+from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-from fastapi import FastAPI
+
 from models import Models
 
 app = FastAPI()
 models = Models()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 api_root = "/api/v1"
 port = 8000
@@ -22,7 +35,7 @@ def api():
 
 
 ######################################################################################
-# adminができる操作
+# adminだけができる操作
 ######################################################################################
 
 # 会社を追加する
@@ -112,13 +125,31 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int, reject_reason:
 
 
 ######################################################################################
-# memberができる操作
+# 全員ができる操作
 ######################################################################################
+
+# トークンを取得する
+@app.post(api_root + "/token")
+def get_token(company_id: int, employee_email: str, employee_login_password: str):
+    return models.get_token(company_id, employee_email, employee_login_password)
+
 
 # ログインする
 @app.post(api_root + "/login")
-def login(company_id: int, employee_email: str, employee_login_password: str):
-    return models.login(company_id, employee_email, employee_login_password)
+async def login(request: Request):
+    payload = await request.json()
+    company_id = payload["company_id"]
+    employee_email = payload["employee_email"]
+    employee_login_password = payload["employee_login_password"]
+
+    data = models.login(company_id, employee_email, employee_login_password)
+
+    # もしdateにerrorというキーがあれば、それはエラーの内容
+    if data["error"] == "company_id or mail address is wrong.":
+        raise HTTPException(status_code=401, detail=data["会社IDかメールアドレスが間違っている、もしくは登録されていません。"])
+    if data["error"] == "password is wrong.":
+        raise HTTPException(status_code=401, detail=data["パスワードが間違っています。"])
+    return data
 
 
 # ログアウトする
