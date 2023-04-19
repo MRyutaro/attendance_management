@@ -31,11 +31,11 @@ const Login = () => {
       if (data.is_active) {
         router.push("/", "home");
       } else {
-        alert("ログインに失敗しました？");
+        alert("ログインに失敗しました");
       }
     } catch (error) {
       console.error(error);
-      alert("ログインに失敗しました？");
+      alert("ログインに失敗しました");
     }
   };
 
