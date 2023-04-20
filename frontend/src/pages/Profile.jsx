@@ -9,19 +9,15 @@ const Profile = () => {
     name: "",
     employee_email: "",
     employee_login_password: "",
-    confirmPassword: "",
   });
 
-  const { name, employee_email, employee_login_password, confirmPassword } = formData;
+  const { name, employee_email, employee_login_password, } = formData;
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (employee_login_password !== confirmPassword) {
-      console.log("パスワードが一致しません");
-    } else {
       try {
         const res = await axios.post("/api/register", {
           name,
@@ -32,7 +28,6 @@ const Profile = () => {
         router.push("/");
       } catch (err) {
         console.error(err);
-      }
     }
   };
 
