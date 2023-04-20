@@ -1,7 +1,41 @@
+import { useState } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 const Profile = () => {
   const router = useRouter();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    employee_email: "",
+    employee_login_password: "",
+    confirmPassword: "",
+  });
+
+  const { name, employee_email, employee_login_password, confirmPassword } = formData;
+
+  const onChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (employee_login_password !== confirmPassword) {
+      console.log("パスワードが間違っています");
+    } else {
+      try {
+        const res = await axios.post("/api/register", {
+          name,
+          employee_email,
+          employee_login_password,
+        });
+        console.log(res.data);
+        router.push("/");
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   const clickHandler = () => {
     router.push("/", "home");
   };
@@ -12,7 +46,7 @@ const Profile = () => {
           <div>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">個人設定</h2>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form onSubmit={onSubmit} className="mt-8 space-y-6" action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
@@ -24,6 +58,7 @@ const Profile = () => {
                   name="name"
                   type="text"
                   autoComplete="name"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="名前"
@@ -32,16 +67,17 @@ const Profile = () => {
               <br></br>
               <div>
                 <label htmlFor="address" className="sr-only">
-                  アドレス
+                  メールアドレス
                 </label>
                 <input
-                  id="address"
-                  name="address"
+                  id="employee_email"
+                  name="employee_email"
                   type="text"
-                  autoComplete="address"
+                  autoComplete="employee_email"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="アドレス"
+                  placeholder="メールアドレス"
                 />
               </div>
               <br></br>
@@ -50,10 +86,11 @@ const Profile = () => {
                   パスワード
                 </label>
                 <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
+                  id="employee_login_password"
+                  name="employee_login_password"
+                  type="text"
+                  autoComplete="employee_login_password"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="パスワード"
@@ -69,6 +106,7 @@ const Profile = () => {
                   name="transportation-expense"
                   type="number"
                   autoComplete="off"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="交通費"
