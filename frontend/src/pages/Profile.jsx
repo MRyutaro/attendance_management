@@ -20,7 +20,7 @@ const Profile = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     if (employee_login_password !== confirmPassword) {
-      console.log("パスワードが間違っています");
+      console.log("パスワードが一致しません");
     } else {
       try {
         const res = await axios.post("/api/register", {
@@ -36,9 +36,6 @@ const Profile = () => {
     }
   };
 
-  const clickHandler = () => {
-    router.push("/", "home");
-  };
   return (
     <>
       <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -73,7 +70,7 @@ const Profile = () => {
                   id="employee_email"
                   name="employee_email"
                   type="text"
-                  autoComplete="employee_email"
+                  autoComplete="email"
                   onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
@@ -89,7 +86,7 @@ const Profile = () => {
                   id="employee_login_password"
                   name="employee_login_password"
                   type="text"
-                  autoComplete="employee_login_password"
+                  autoComplete="password"
                   onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
@@ -116,7 +113,6 @@ const Profile = () => {
 
             <div>
               <button
-                onClick={clickHandler}
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
