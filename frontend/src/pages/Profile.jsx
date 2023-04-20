@@ -1,10 +1,39 @@
+import { useState } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 const Profile = () => {
   const router = useRouter();
-  const clickHandler = () => {
-    router.push("/", "home");
+
+  const [formData, setFormData] = useState({
+    name: "",
+    employee_email: "",
+    employee_login_password: "",
+  });
+
+  const { name, employee_email, employee_login_password, } = formData;
+
+  const onChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async (e) => {
+    const baseUrl = "http://localhost:8000/api/v1";
+    e.preventDefault();
+
+      try {
+        const res = await axios.post(`${baseUrl}/Profile`,
+        {
+          name,
+          employee_email,
+          employee_login_password,
+        });
+        console.log(res.data);
+        router.push("/");
+      } catch (err) {
+        console.error(err);
+    }
   };
+
   return (
     <>
       <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -12,7 +41,7 @@ const Profile = () => {
           <div>
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">個人設定</h2>
           </div>
-          <form className="mt-8 space-y-6" action="#" method="POST">
+          <form onSubmit={onSubmit} className="mt-8 space-y-6" action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
@@ -24,6 +53,7 @@ const Profile = () => {
                   name="name"
                   type="text"
                   autoComplete="name"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="名前"
@@ -32,16 +62,16 @@ const Profile = () => {
               <br></br>
               <div>
                 <label htmlFor="address" className="sr-only">
-                  アドレス
+                  メールアドレス
                 </label>
                 <input
-                  id="address"
-                  name="address"
+                  id="employee_email"
+                  name="employee_email"
                   type="text"
-                  autoComplete="address"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="アドレス"
+                  placeholder="メールアドレス"
                 />
               </div>
               <br></br>
@@ -50,10 +80,10 @@ const Profile = () => {
                   パスワード
                 </label>
                 <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
+                  id="employee_login_password"
+                  name="employee_login_password"
+                  type="tpassword"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="パスワード"
@@ -69,6 +99,7 @@ const Profile = () => {
                   name="transportation-expense"
                   type="number"
                   autoComplete="off"
+                  onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="交通費"
@@ -78,7 +109,6 @@ const Profile = () => {
 
             <div>
               <button
-                onClick={clickHandler}
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
