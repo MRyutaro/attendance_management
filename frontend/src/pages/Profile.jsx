@@ -17,9 +17,12 @@ const Profile = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
+    const baseUrl = "http://localhost:8000/api/v1";
     e.preventDefault();
+
       try {
-        const res = await axios.post("/api/register", {
+        const res = await axios.post(`${baseUrl}/Profile`,
+        {
           name,
           employee_email,
           employee_login_password,
