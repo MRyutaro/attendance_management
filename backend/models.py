@@ -14,8 +14,8 @@ import psycopg2
 class Models():
     def __init__(self):
         # postgresqlに接続する
-        # fix: 環境変数から取得する
-        MODE = "prod"
+        # FIXME: 環境変数から取得する
+        MODE = "dev"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
@@ -28,7 +28,7 @@ class Models():
             self.password = "password"
             self.user = "user"
             self.database = "db"
-        # fix: 接続できるまで繰り返す
+        # FIXME: 接続できるまで繰り返す
         try:
             with self.get_connection():
                 print("postgresqlに接続しました。")
@@ -78,7 +78,7 @@ class Models():
                         data = cursor.fetchall()
                 conn.commit()
         except psycopg2.Error as e:
-            print(f"クエリの実行に失敗しました: {e}")
+            print(f"クエリの実行に失敗しました！エラーはこちら: {e}")
         return data
 
     def create_companies_tables(self):
@@ -245,6 +245,7 @@ class Models():
             conn.commit()
             with conn.cursor() as cursor:
                 # 勤怠修正記録テーブルを作成
+                # TODO; work_dateからwork_record_idに変更する。work_record_idはwork_recordsテーブルからの外部キー
                 sql = """
                     CREATE TABLE IF NOT EXISTS correction_records (
                         correction_record_id SERIAL PRIMARY KEY,
@@ -322,9 +323,9 @@ class Models():
     ######################################################################################
     def add_company(self, company_name, company_email, company_login_password):
         # 会社を追加する
-        # add: ハッシュ化したパスワードをデータベースに保存する
-        # add: sessionにcompany_idを保存する
-        # add: company_login_passwordを隠して通信する
+        # TODO: ハッシュ化したパスワードをデータベースに保存する
+        # TODO: sessionにcompany_idを保存する
+        # TODO: company_login_passwordを隠して通信する
         sql = "INSERT INTO companies (company_name, company_email, company_login_password) VALUES (%s, %s, %s)"
         self.execute_query(sql, (company_name, company_email, company_login_password))
 
@@ -339,7 +340,7 @@ class Models():
 
         self.create_other_tables()
 
-        # add: calendarに日付と曜日を追加する
+        # TODO: calendarに日付と曜日を追加する
         sql = """
             INSERT INTO calendar (date, dow, work_type)
             SELECT
@@ -375,7 +376,7 @@ class Models():
 
     def update_company(self, company_id, company_name: str = "", company_email: str = "", old_company_login_password: str = "", new_company_login_password: str = ""):
         # 会社情報を更新する
-        # add: ハッシュ化したパスワードをデータベースに保存する
+        # TODO: ハッシュ化したパスワードをデータベースに保存する
         sql = "SELECT company_login_password FROM companies WHERE company_id = %s"
         company_login_password = self.execute_query(sql, (company_id,))[0][0]
         if company_login_password != old_company_login_password:
@@ -407,9 +408,9 @@ class Models():
 
     def add_employee(self, company_id, employee_name, employee_email, authority):
         # 社員を追加する
-        # add: ハッシュ化したパスワードをデータベースに保存する
-        # add: sessionにemployee_idを保存する
-        # add: tmp_employee_login_passwordを隠して通信する
+        # TODO: ハッシュ化したパスワードをデータベースに保存する
+        # TODO: sessionにemployee_idを保存する
+        # TODO: tmp_employee_login_passwordを隠して通信する
         tmp_employee_login_password = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
         sql = "INSERT INTO employees (company_id, employee_name, employee_email, authority, employee_login_password)\
             VALUES (%s, %s, %s, %s, %s)"
@@ -458,7 +459,7 @@ class Models():
 
     def download_monthly_work_records(self, company_id, employee_id, year, month):
         # 月別勤怠情報をダウンロードする
-        # add: csvで返す。https://dajiro.com/entry/2021/04/03/230945
+        # TODO: csvで返す。https://dajiro.com/entry/2021/04/03/230945
         return {
             "employee_id": employee_id,
             "year": year,
@@ -476,7 +477,7 @@ class Models():
                 WHERE company_id = %s AND EXTRACT(YEAR FROM work_date) = %s AND EXTRACT(MONTH FROM work_date) = %s AND status = %s"
         data = self.execute_query(sql, (company_id, year, month, status))
 
-        # add: day_of_the_weekとwork_statusを追加する
+        # TODO: day_of_the_weekとwork_statusを追加する
         correction_records = [
             {
                 "correction_record_id": correction_record[0],
@@ -688,14 +689,14 @@ class Models():
 
     def get_token(self, company_id, employee_email, employee_login_password):
         # トークンを取得する
-        # fix: パスワードを暗号化する
+        # FIXME: パスワードを暗号化する
         pass
 
     def login(self, company_id, employee_email, employee_login_password):
         # ログインする
-        # fix: パスワードを暗号化する
-        # fix: セッションを作成する
-        # add: メールアドレスが違う場合の処理を追加する
+        # FIXME: パスワードを暗号化する
+        # FIXME: セッションを作成する
+        # TODO: メールアドレスが違う場合の処理を追加する
         sql = "SELECT employee_id, employee_name, employee_login_password\
                 FROM employees\
                 WHERE company_id = %s AND employee_email = %s"
@@ -732,7 +733,7 @@ class Models():
 
     def logout(self):
         # ログアウトする
-        # add: セッションを破棄する
+        # TODO: セッションを破棄する
         return {
             "is_active": False
         }
@@ -753,8 +754,8 @@ class Models():
 
     def update_my_information(self, company_id, employee_id, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses):
         # 社員情報を更新する
-        # add: old_employee_login_passwordをハッシュ化してデータベースに保存されている内容と一致するかどうかを確認する
-        # add: new_employee_login_passwordを**で隠して、文字数だけ返す
+        # TODO: old_employee_login_passwordをハッシュ化してデータベースに保存されている内容と一致するかどうかを確認する
+        # TODO: new_employee_login_passwordを**で隠して、文字数だけ返す
 
         sql = "SELECT employee_login_password FROM employees WHERE company_id = %s AND employee_id = %s"
         employee_login_password = self.execute_query(sql, (company_id, employee_id))[0][0]
@@ -880,10 +881,10 @@ class Models():
 
     def get_monthly_work_records(self, company_id, employee_id, year, month):
         # 月別勤怠情報を取得する
-        # fix: calendarとpaid_leavesを結合し、それとwork_recordsを結合する
-        # fix: work_dateはpaid_leavesから取得する
-        # fix: 結合したものからemployee_id, year, monthで絞り込み、work_dateでソートする
-        # add: day_of_the_weekとwork_statusを追加する
+        # FIXME: calendarとpaid_leavesを結合し、それとwork_recordsを結合する
+        # FIXME: work_dateはpaid_leavesから取得する
+        # FIXME: 結合したものからemployee_id, year, monthで絞り込み、work_dateでソートする
+        # TODO: day_of_the_weekとwork_statusを追加する
         sql = """
             SELECT
                 calendar.date,
@@ -934,14 +935,14 @@ class Models():
             "work_records": work_records
         }
 
-    def request_correction(self, company_id, employee_id, work_date, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_contents):
+    def request_correction(self, company_id, employee_id, work_record_id, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overtime_work_at, finish_overtime_work_at, workplace, work_contents):
         # 修正依頼をする
         sql = "INSERT INTO correction_records (\
-                company_id, employee_id, work_date, "
-        variables = [company_id, employee_id, work_date]
+                company_id, employee_id, work_record_id, "
+        # FIXME: correction_recordsのカラムをwork_dateからwork_record_idに変更する
+        variables = [company_id, employee_id, work_record_id]
         values = "VALUES (%s, %s, %s, "
         if start_work_at != "":
-            # sqlの最後にstart_work_atを追加する
             sql += "start_work_at,"
             values += "%s,"
             variables.append(start_work_at)
@@ -982,7 +983,7 @@ class Models():
         self.execute_query(sql, variables)
 
         return {
-            "work_date": work_date,
+            "work_record_id": work_record_id,
             "start_work_at": start_work_at,
             "finish_work_at": finish_work_at,
             "start_break_at": start_break_at,
