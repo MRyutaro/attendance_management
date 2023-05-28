@@ -1,36 +1,36 @@
 version: "3"
 
 services:
-    frontend:
-        container_name: frontend
-        build:
-            context: ./frontend
-            dockerfile: Dockerfile
-        ports:
-            - "3000:3000"
-        volumes:
-            - ./frontend:/usr/src
-        depends_on:
-            - api
-        command: npm run dev
-    db:
-        container_name: db
-        image: postgres:15.2
-        ports:
-            - "5432:5432"
-        environment:
-            POSTGRES_PASSWORD: password
-            POSTGRES_USER: user
-            POSTGRES_DB: db
-    api:
-        container_name: api
-        build:
-            context: ./backend
-            dockerfile: Dockerfile
-        ports:
-            - "8000:8000"
-        volumes:
-            - ./backend:/usr/src
-        depends_on:
-            - db
-        command: python api.py
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/usr/src
+    depends_on:
+      - api
+    command: npm run dev
+  db:
+    container_name: db
+    image: postgres:15.2
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ---
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+  api:
+    container_name: api
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/usr/src
+    depends_on:
+      - db
+    command: python api.py

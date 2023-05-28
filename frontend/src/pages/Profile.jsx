@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 
@@ -11,26 +11,41 @@ const Profile = () => {
     employee_login_password: "",
   });
 
-  const { name, employee_email, employee_login_password, } = formData;
+  const { name, employee_email, employee_login_password } = formData;
+
+  useEffect(() => {
+    // データの取得や初期化の処理を実行
+    const fetchProfileData = async () => {
+      try {
+        const baseUrl = "http://localhost:8000/api/v1";
+        const res = await axios.get(`${baseUrl}/Profile`);
+        const { name, employee_email, employee_login_password } = res.data;
+        setFormData({ name, employee_email, employee_login_password });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = async (e) => {
-    const baseUrl = "http://localhost:8000/api/v1";
     e.preventDefault();
 
-      try {
-        const res = await axios.post(`${baseUrl}/Profile`,
-        {
-          name,
-          employee_email,
-          employee_login_password,
-        });
-        console.log(res.data);
-        router.push("/");
-      } catch (err) {
-        console.error(err);
+    try {
+      const baseUrl = "http://localhost:8000/api/v1";
+      const res = await axios.post(`${baseUrl}/Profile`, {
+        name,
+        employee_email,
+        employee_login_password,
+      });
+      console.log(res.data);
+      router.push("/");
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -46,7 +61,7 @@ const Profile = () => {
             <div className="-space-y-px rounded-md shadow-sm">
               <div>
                 <label htmlFor="name" className="sr-only">
-                  名前
+                  氏名
                 </label>
                 <input
                   id="name"
@@ -56,7 +71,7 @@ const Profile = () => {
                   onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="名前"
+                  placeholder="氏名"
                 />
               </div>
               <br></br>
@@ -82,7 +97,7 @@ const Profile = () => {
                 <input
                   id="employee_login_password"
                   name="employee_login_password"
-                  type="tpassword"
+                  type="password"
                   onChange={onChange}
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
@@ -115,7 +130,7 @@ const Profile = () => {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <div className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
                 </span>
-                Submit
+                保存
               </button>
             </div>
             <div className="justify-between">
