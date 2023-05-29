@@ -1,7 +1,5 @@
 import axios from "axios";
-import React from "react";
-import { useState } from "react";
-
+import React, { useState } from "react";
 
 // フォームの入力値を管理
 const Signup = () => {
@@ -23,12 +21,15 @@ const Signup = () => {
 
   try {
   // APIリクエストを実行
-    const response = await axios.post("http://localhost:8000/api/v1", formData);
-    console.log(response.data); // レスポンスのデータを表示    
+    const baseUrl = "http://localhost:8000/api/v1";
+    const response = await axios.post(`${baseUrl}/Signup`, formData);
+    console.log(response.data);// レスポンスのデータを表示 
+     
   // 成功したら画面遷移
-
+  
   } catch (error) {
-    console.error(error); // エラーハンドリング
+    console.error(error); 
+    alert("登録に失敗しました");// エラーハンドリング
   }
 };
 

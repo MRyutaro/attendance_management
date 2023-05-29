@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useEffect,useState } from "react";
 
 const Profile = () => {
   const router = useRouter();
