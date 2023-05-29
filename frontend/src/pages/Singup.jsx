@@ -10,7 +10,7 @@ const Signup = () => {
     authority: "",
   });
   
-  // 入力値が変更されたときのイベント
+  // フォームの入力値が変更されるたびにフォームデータの状態を更新
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -21,8 +21,7 @@ const Signup = () => {
 
   try {
   // APIリクエストを実行
-    const baseUrl = "http://localhost:8000/api/v1";
-    const response = await axios.post(`${baseUrl}/Signup`, formData);
+    const response = await axios.post(`http://localhost:8000/api/v1/companies/{company_id}/employees`, formData);
     console.log(response.data);// レスポンスのデータを表示 
      
   // 成功したら画面遷移
@@ -50,7 +49,7 @@ const Signup = () => {
                 <input
                   id="company_id"
                   name="company_id"
-                  type="text"
+                  type="number"
                   autoComplete="company_id"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
