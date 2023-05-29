@@ -1,6 +1,7 @@
+import axios from "axios";
 import React from "react";
 import { useState } from "react";
-import axios from "axios";
+
 
 // フォームの入力値を管理
 const Signup = () => {
