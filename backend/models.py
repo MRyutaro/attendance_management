@@ -15,13 +15,13 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "prod"
+        MODE = "dev"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
-            self.password = "1028"
+            self.password = "---"
             self.user = "postgres"
-            self.database = "db"
+            self.database = "postgres"
         elif MODE == "prod":
             self.host = "db"
             self.port = 5432
