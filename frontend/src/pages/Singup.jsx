@@ -29,7 +29,7 @@ const Signup = () => {
       if (response.data.is_active) {
         router.push("/", "home");
       } else {
-        alert("ログインに失敗しました");
+        alert("失敗しました");
       }
 
     // エラーハンドリング  
