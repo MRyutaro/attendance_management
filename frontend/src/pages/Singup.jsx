@@ -1,36 +1,60 @@
 import axios from "axios";
-import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { useState } from "react";
 
-// フォームの入力値を管理
 const Signup = () => {
-  const [formData, setFormData] = useState({
-    company_id: "",
-    employee_name: "",
-    employee_email: "",
-    authority: "",
-  });
-  
-  // フォームの入力値が変更されるたびにフォームデータの状態を更新
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const router = useRouter();
+  const [company_id, setCompanyid] = useState('');
+  const [employee_name, setemployeeName] = useState('');
+  const [employee_email, setemployeeEmail] = useState('');
+  const [authority, setAuthority] = useState('');
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    //フォームの入力値を適切な形式で収集し、APIリクエストに必要なデータを提供
+    try {
+      const formData = {
+        company_id: company_id,
+        employee_name: employee_name,
+        employee_email: employee_email,
+        authority: authority,
+      };
+
+      //APIエンドポイントに対してPOSTリクエストを送信
+      const response = await axios.post("http://localhost:8000/api/v1/companies/{company_id}/employees", formData);
+      console.log(response.data);
+
+      // 登録に成功したらホーム画面に遷移
+      if (response.data.is_active) {
+        router.push("/", "home");
+      } else {
+        alert("ログインに失敗しました");
+      }
+
+    // エラーハンドリング  
+    } catch (error) {
+      console.error(error);
+      alert("登録に失敗しました"); 
+    }
   };
 
-  // フォームの送信
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  //要素の属性や値にアクセス
+  const handleChangeId = (event) => {
+    setCompanyid(event.currentTarget.value);
+  };
 
-  try {
-  // APIリクエストを実行
-    const response = await axios.post(`http://localhost:8000/api/v1/companies/{company_id}/employees`, formData);
-    console.log(response.data);// レスポンスのデータを表示 
-     
-  // 成功したら画面遷移
-  
-  } catch (error) {
-    console.error(error); 
-    alert("登録に失敗しました");// エラーハンドリング
-  }
-};
+  const handleChangeName = (event) => {
+    setemployeeName(event.currentTarget.value);
+  };
+
+  const handleChangeEmail = (event) => {
+    setemployeeEmail(event.currentTarget.value);
+  };
+
+  const handleChangeAuthority = (event) => {
+    setAuthority(event.currentTarget.value);
+  };
 
   return (
     <>
@@ -49,13 +73,12 @@ const Signup = () => {
                 <input
                   id="company_id"
                   name="company_id"
-                  type="number"
+                  type="text"
                   autoComplete="company_id"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="会社ID"
-                  value={formData.company_id}
-                  onChange={handleChange}
+                  onChange={(event) => handleChangeId(event)}
                 />
               </div>
               <br></br>
@@ -71,8 +94,7 @@ const Signup = () => {
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="氏名"
-                  value={formData.employee_name}
-                  onChange={handleChange}
+                  onChange={(event) => handleChangeName(event)}
                 />
               </div>
               <br></br>
@@ -88,8 +110,7 @@ const Signup = () => {
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="メールアドレス"
-                  value={formData.employee_email}
-                  onChange={handleChange}
+                  onChange={(event) => handleChangeEmail(event)}
                 />
               </div>
               <br></br>
@@ -105,8 +126,7 @@ const Signup = () => {
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                   placeholder="パスワード"
-                  value={formData.authority}
-                  onChange={handleChange}
+                  onChange={(event) => handleChangeAuthority(event)}
                 />
               </div>
             </div>
@@ -114,7 +134,6 @@ const Signup = () => {
             <div>
               <button
                 onClick={handleSubmit}
-                type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
