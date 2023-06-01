@@ -1,10 +1,9 @@
 import datetime
 
-from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.security import OAuth2PasswordBearer
-from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 from models import Models
 
 app = FastAPI()
