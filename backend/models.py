@@ -15,7 +15,7 @@ class Models():
     def __init__(self):
         # postgresqlに接続する
         # fix: 環境変数から取得する
-        MODE = "dev"
+        MODE = "prod"
         if MODE == "dev":
             self.host = "localhost"
             self.port = 5432
@@ -26,8 +26,8 @@ class Models():
             self.host = "db"
             self.port = 5432
             self.password = "password"
-            self.user = "user"
-            self.database = "db"
+            self.user = "postgres"
+            self.database = "postgres"
         # fix: 接続できるまで繰り返す
         try:
             with self.get_connection():
