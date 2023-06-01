@@ -4,31 +4,39 @@ emailもしくは会社idと従業員idで一意に識別できるようにす�
 """
 
 import datetime
+import os
 import random
 import string
 import time
 
+import dotenv
 import psycopg2
 
 
 class Models():
     def __init__(self):
         # postgresqlに接続する
-        # fix: 環境変数から取得する
-        MODE = "prod"
+        dotenv_path = os.path.join(os.path.dirname(__file__), 'db.env')
+        dotenv.load_dotenv()
+        dotenv.load_dotenv(dotenv_path)
+        MODE = os.getenv("MODE")
+        print(f"============================MODE: {MODE}============================")
         if MODE == "dev":
-            self.host = "localhost"
-            self.port = 5432
-            self.password = "---"
-            self.user = "postgres"
-            self.database = "postgres"
+            self.host = os.getenv("LOCAL_DB_HOST")
+            self.port = os.getenv("LOCAL_DB_PORT")
+            self.password = os.getenv("LOCAL_DB_PASSWORD")
+            self.user = os.getenv("LOCAL_DB_USER")
+            self.database = os.getenv("LOCAL_DB_DATABASE")
         elif MODE == "prod":
-            self.host = "db"
-            self.port = 5432
-            self.password = "password"
-            self.user = "postgres"
-            self.database = "postgres"
-        # fix: 接続できるまで繰り返す
+            self.host = os.getenv("POSTGRES_HOST")
+            self.port = os.getenv("POSTGRES_PORT")
+            self.password = os.getenv("POSTGRES_PASSWORD")
+            self.user = os.getenv("POSTGRES_USER")
+            self.database = os.getenv("POSTGRES_DB")
+        # TODO: 接続できるまで繰り返す
+        print(f"=============={self.host}:{self.port}に接続します。==============")
+        print(f"==============ユーザー名: {self.user}==============")
+        print(f"==============データベース名: {self.database}==============")
         try:
             with self.get_connection():
                 print("postgresqlに接続しました。")
