@@ -436,10 +436,15 @@ class Models():
             "employee_login_password": tmp_employee_login_password,
         }
 
-    def get_employees(self, company_id):
+    def get_employees(self, company_id, authority):
         # 全社員情報を取得する
+        # もしauthorityがNoneでなければ、その権限の社員のみ取得する
         sql = "SELECT employee_id, employee_name, employee_email, authority FROM employees WHERE company_id = %s"
-        data = self.execute_query(sql, (company_id,))
+        values = (company_id,)
+        if authority:
+            sql += " AND authority = %s"
+            values += (authority,)
+        data = self.execute_query(sql, values)
 
         employees = [
             {
