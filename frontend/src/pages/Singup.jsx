@@ -22,14 +22,14 @@ const Signup = () => {
       };
 
       //APIエンドポイントに対してPOSTリクエストを送信
-      const response = await axios.post("http://localhost:8000/api/v1/companies/{company_id}/employees", formData);
+      const response = await axios.post("http://localhost:8000/api/v1/companies/1/employees", formData);
       console.log(response.data);
 
       // 登録に成功したらホーム画面に遷移
-      if (response.data.is_active) {
-        router.push("/", "home");
+      if (response.data) {
+        router.push("/");
       } else {
-        alert("失敗しました");
+        alert("登録はできましたが画面遷移ができませんでした");
       }
 
     // エラーハンドリング  
