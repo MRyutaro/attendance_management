@@ -1,4 +1,4 @@
-from api.views import UserCreateAPIView, LoginView
+from api.views import LoginView, UserCreateAPIView
 from django.urls import path
 
 urlpatterns = [
