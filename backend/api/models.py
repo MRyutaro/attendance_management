@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 
 class Company(models.Model):
     company_id = models.AutoField(primary_key=True)
@@ -34,7 +32,6 @@ class User(models.Model):
 class WorkRecord(models.Model):
     # User削除時にWorkRecordも削除する
     user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
-    # TODO: これだと1日に1人の従業員しか登録できないか確認する->正解。unique=Trueにすると1日に1人しか登録できない
     work_date = models.DateField()
     start_work_at = models.TimeField(null=True, blank=True)
     finish_work_at = models.TimeField(null=True, blank=True)
