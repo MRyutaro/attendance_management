@@ -22,6 +22,7 @@ class User(models.Model):
     user_login_password = models.CharField(max_length=30)
     authority = models.CharField(max_length=10, choices=[('ADMIN', '管理者'), ('USER', '一般ユーザ')], default='user')
     commuting_expenses = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
