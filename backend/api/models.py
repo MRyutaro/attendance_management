@@ -6,8 +6,13 @@ from django.db import models
 class Company(models.Model):
     company_id = models.AutoField(primary_key=True)
     company_name = models.CharField(max_length=30)
-    company_email = models.CharField(max_length=30, unique=True)
+    company_email = models.CharField(max_length=30)
     company_login_password = models.CharField(max_length=30)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['company_name', 'company_email'], name='unique_company')
+        ]
 
 
 class User(models.Model):
@@ -15,31 +20,41 @@ class User(models.Model):
     company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
     user_id = models.AutoField(primary_key=True)
     user_name = models.CharField(max_length=30)
-    user_email = models.CharField(max_length=30, unique=True)
+    user_email = models.CharField(max_length=30)
     user_login_password = models.CharField(max_length=30)
     authority = models.CharField(max_length=10, choices=[('ADMIN', '管理者'), ('USER', '一般ユーザ')], default='user')
     commuting_expenses = models.IntegerField(default=0)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['company_id', 'user_email'], name='unique_user')
+        ]
 
 
 class WorkRecord(models.Model):
     # User削除時にWorkRecordも削除する
     user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
-    # TODO: これだと1日に1人の従業員しか登録できないか確認する
-    work_date = models.DateField(unique=True)
-    start_work_at = models.TimeField()
-    finish_work_at = models.TimeField()
-    start_break_at = models.TimeField()
-    finish_break_at = models.TimeField()
-    start_overwork_at = models.TimeField()
-    finish_overwork_at = models.TimeField()
+    # TODO: これだと1日に1人の従業員しか登録できないか確認する->正解。unique=Trueにすると1日に1人しか登録できない
+    work_date = models.DateField()
+    start_work_at = models.TimeField(null=True, blank=True)
+    finish_work_at = models.TimeField(null=True, blank=True)
+    start_break_at = models.TimeField(null=True, blank=True)
+    finish_break_at = models.TimeField(null=True, blank=True)
+    start_overwork_at = models.TimeField(null=True, blank=True)
+    finish_overwork_at = models.TimeField(null=True, blank=True)
     workplace = models.CharField(max_length=10, choices=[('OFFICE', 'オフィス'), ('HOME', '在宅'), ('OTHERS', 'その他')], default='OFFICE')
     work_contents = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user_id', 'work_date'], name='unique_work_record')
+        ]
 
 
 class PaidLeave(models.Model):
     company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
-    date = models.DateField(unique=True)
+    date = models.DateField()
     work_type = models.CharField(
         max_length=20,
         choices=[
@@ -48,12 +63,17 @@ class PaidLeave(models.Model):
         default='WORKDAY'
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user_id', 'date'], name='unique_paid_leave')
+        ]
+
 
 class PaidLeaveRecord(models.Model):
     paid_leave_record_id = models.AutoField(primary_key=True)
     company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
-    paid_leave_date = models.DateField(unique=True)
+    paid_leave_date = models.DateField()
     work_type = models.CharField(max_length=30)
     paid_leave_reason = models.CharField(max_length=50)
     requested_at = models.DateTimeField()
@@ -65,6 +85,11 @@ class PaidLeaveRecord(models.Model):
     confirmed_at = models.DateTimeField(null=True, blank=True)
     reject_reason = models.CharField(max_length=50, null=True, blank=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user_id', 'paid_leave_date', 'status'], name='unique_paid_leave_record')
+        ]
+
 
 class PaidLeaveDays(models.Model):
     company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
@@ -72,3 +97,8 @@ class PaidLeaveDays(models.Model):
     year = models.IntegerField(unique=True)
     max_paid_leave_days = models.FloatField()
     used_paid_leave_days = models.FloatField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user_id', 'year'], name='unique_paid_leave_days')
+        ]
