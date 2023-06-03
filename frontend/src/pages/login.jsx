@@ -33,7 +33,7 @@ const Login = () => {
 
       if (data.is_active) {
         loginUser(data.employee_name);
-        router.push("/", "home");
+        router.push("/", "/");
       } else {
         alert("ログインに失敗しました");
       }
