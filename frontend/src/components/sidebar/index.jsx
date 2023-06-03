@@ -5,8 +5,12 @@ import HomeIcon from "public/home.svg";
 import LogoutIcon from "public/logout.svg";
 import MonthlyIcon from "public/monthly.svg";
 import ProfileIcon from "public/profile.svg";
+import { useContext } from "react";
+
+import { UserContext } from "../../utils/Context";
 
 const Sidebar = () => {
+  const { user } = useContext(UserContext);
   return (
     <div className=" static flex flex-col top-0 left-0 w-14 hover:w-[240px] lg:w-[200px] bg-[radial-gradient(circle_at_bottom_right,#3c9add,#6a007a)]  h-screen text-white transition-all duration-300 border-none z-10 sidebar">
       <div className="overflow-y-auto overflow-x-hidden flex flex-col justify-between flex-grow">
@@ -17,7 +21,7 @@ const Sidebar = () => {
                 <Image src="/dummy-avatar.jpg" height={40} width={40} alt="profile" className="rounded-full  relative object-cover" />
               </div>
               <div>
-                <p className="ml-5 font-medium group-hover:text-indigo-400 leading-6">Muneyuki Sakata</p>
+                <p className="ml-5 font-medium group-hover:text-indigo-400 leading-6">{user}</p>
               </div>
             </div>
           </li>

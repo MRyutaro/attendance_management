@@ -1,12 +1,15 @@
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useContext, useState } from "react";
+
+import { UserContext } from "../utils/Context";
 
 const Login = () => {
   const router = useRouter();
   const [employee_email, setUseremail] = useState("");
   const [employee_login_password, setPassword] = useState("");
+  const { loginUser } = useContext(UserContext);
   const clickHandler = async (event) => {
     const baseUrl = "http://localhost:8000/api/v1";
     event.preventDefault();
@@ -29,6 +32,7 @@ const Login = () => {
       const data = response.data;
 
       if (data.is_active) {
+        loginUser(data.employee_name);
         router.push("/", "home");
       } else {
         alert("ログインに失敗しました");
