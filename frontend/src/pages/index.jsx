@@ -1,6 +1,6 @@
-import useRequireLogin from "../components/Author/hooks/useRequireLogin";
 import Clock from "../components/Clock";
 import Calender from "../components/Clock/Calender";
+import useRequireLogin from "../utils/Author/hooks/useRequireLogin";
 
 export default function Home() {
   useRequireLogin();

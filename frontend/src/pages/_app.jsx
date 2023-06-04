@@ -1,7 +1,7 @@
 import "../styles/globals.css";
 
-import { AuthProvider } from "../components/Author/AuthProvider";
 import Layout from "../components/Layout";
+import { AuthProvider } from "../utils/Author/AuthProvider";
 
 export default function App(props) {
   const { Component, pageProps } = props;
