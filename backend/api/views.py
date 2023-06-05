@@ -3,9 +3,9 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import (Company, PaidLeave, PaidLeaveDays, PaidLeaveRecord, User,
+from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User,
                      WorkRecord)
-from .serializers import (CompanySerializer, PaidLeaveDaysSerializer,
+from .serializers import (CompanySerializer, PaidLeaveDaySerializer,
                           PaidLeaveRecordSerializer, PaidLeaveSerializer,
                           UserSerializer, WorkRecordSerializer)
 
@@ -21,6 +21,33 @@ class CompanyCreateAPIView(generics.CreateAPIView):
         if company:
             return Response({'message': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
         return super().post(request)
+
+
+class CompanyUpdateAPIView(generics.UpdateAPIView):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+
+    # 同じメールアドレスが登録されていないか確認
+    def put(self, request):
+        company_email = request.data.get('company_email')
+        print(f"company_email: {company_email}")
+        company = Company.objects.filter(company_email=company_email).first()
+
+        if not company:
+            return Response({'message': 'This email address is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        company_login_password = request.data.get('company_login_password')
+        if company.company_login_password != company_login_password:
+            return Response({'message': 'The password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 会社名が変更されていたら
+        new_company_name = request.data.get('new_company_name')
+        if new_company_name != company.company_name:
+            company.company_name = new_company_name
+            company.save()
+            return Response({'message': 'The company name has been changed.'}, status=status.HTTP_200_OK)
+
+        return Response({'message': 'No changes have been made.'}, status=status.HTTP_200_OK)
 
 
 class UserCreateAPIView(generics.CreateAPIView):

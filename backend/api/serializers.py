@@ -1,7 +1,7 @@
 from api.models import User
 from rest_framework import serializers
 
-from .models import (Company, PaidLeave, PaidLeaveDays, PaidLeaveRecord, User,
+from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User,
                      WorkRecord)
 
 
@@ -35,7 +35,7 @@ class PaidLeaveRecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PaidLeaveDaysSerializer(serializers.ModelSerializer):
+class PaidLeaveDaySerializer(serializers.ModelSerializer):
     class Meta:
-        model = PaidLeaveDays
+        model = PaidLeaveDay
         fields = '__all__'

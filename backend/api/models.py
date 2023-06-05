@@ -4,13 +4,8 @@ from django.db import models
 class Company(models.Model):
     company_id = models.AutoField(primary_key=True)
     company_name = models.CharField(max_length=30)
-    company_email = models.CharField(max_length=30)
+    company_email = models.CharField(max_length=30, unique=True)
     company_login_password = models.CharField(max_length=30)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['company_name', 'company_email'], name='unique_company')
-        ]
 
 
 class User(models.Model):
@@ -89,7 +84,7 @@ class PaidLeaveRecord(models.Model):
         ]
 
 
-class PaidLeaveDays(models.Model):
+class PaidLeaveDay(models.Model):
     company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
     year = models.IntegerField(unique=True)
