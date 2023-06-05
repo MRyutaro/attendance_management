@@ -7,19 +7,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "${LOCAL_BACKEND_PORT}:${CONTAINER_BACKEND_PORT}"
     volumes:
       - ./backend:/usr/src
     env_file:
       - ./backend/.env
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python manage.py runserver ${CONTAINER_BACKEND_IP}:${CONTAINER_BACKEND_PORT}
   frontend:
     container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${LOCAL_FRONTEND_PORT}:${CONTAINER_FRONTEND_PORT}"
     volumes:
       - ./frontend:/usr/src
     depends_on:
