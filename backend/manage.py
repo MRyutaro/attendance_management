@@ -3,6 +3,8 @@
 import os
 import sys
 
+import dotenv
+
 
 def main():
     """Run administrative tasks."""
@@ -19,4 +21,7 @@ def main():
 
 
 if __name__ == '__main__':
+    dotenv.load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+    # すべての環境変数を表示
+    print(os.environ)
     main()

@@ -77,6 +77,10 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
+# TODO: 本番環境の場合はこの設定方法は安全じゃないから何か別の方法を考える
+# ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
