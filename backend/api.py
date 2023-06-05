@@ -1,11 +1,24 @@
 import datetime
+from typing import Optional
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 from models import Models
 
 app = FastAPI()
 models = Models()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 api_root = "/api/v1"
 port = 8000
@@ -22,12 +35,18 @@ def api():
 
 
 ######################################################################################
-# adminができる操作
+# adminだけができる操作
 ######################################################################################
 
 # 会社を追加する
 @app.post(api_root + "/companies")
-def add_company(company_name: str, company_email: str, company_login_password: str):
+async def add_company(request: Request):
+    payload = await request.json()
+
+    company_name = payload["company_name"]
+    company_email = payload["company_email"]
+    company_login_password = payload["company_login_password"]
+
     return models.add_company(company_name, company_email, company_login_password)
 
 
@@ -37,20 +56,38 @@ def get_company(company_id: int):
 
 
 @app.put(api_root + "/companies/{company_id}")
-def update_company(company_id: int, company_name: str = "", company_email: str = "", old_company_login_password: str = "", new_company_login_password: str = ""):
+@app.put(api_root + "/companies/{company_id}")
+async def update_company(company_id: int, request: Request):
+    payload = await request.json()
+
+    company_name = payload["company_name"]
+    company_email = payload["company_email"]
+    old_company_login_password = payload["old_company_login_password"]
+    new_company_login_password = payload["new_company_login_password"]
+
     return models.update_company(company_id, company_name, company_email, old_company_login_password, new_company_login_password)
 
 
 # 従業員を追加する
 @app.post(api_root + "/companies/{company_id}/employees")
-def add_employee(company_id: int, employee_name: str, employee_email: str, authority: str):
+async def add_employee(company_id: int, request: Request):
+    payload = await request.json()
+
+    employee_name = payload["employee_name"]
+    employee_email = payload["employee_email"]
+    authority = payload["authority"]
+
     return models.add_employee(company_id, employee_name, employee_email, authority)
 
 
 # 全従業員の情報を取得する
+# クエリパラメータでauthorityを指定すると、その権限の従業員のみを取得する
 @app.get(api_root + "/companies/{company_id}/employees")
-def get_employees(company_id: int):
-    return models.get_employees(company_id)
+def get_employees(company_id: int, authority: Optional[str] = None):
+    # authorityがADMINかUSERではない場合はエラーを返す
+    if authority is not None and authority not in ["ADMIN", "USER"]:
+        raise HTTPException(status_code=400, detail="authority must be ADMIN or USER")
+    return models.get_employees(company_id, authority)
 
 
 # 従業員を削除する
@@ -112,13 +149,31 @@ def reject_paid_leave(company_id: int, paid_leave_record_id: int, reject_reason:
 
 
 ######################################################################################
-# memberができる操作
+# 全員ができる操作
 ######################################################################################
+
+# トークンを取得する
+@app.post(api_root + "/token")
+def get_token(company_id: int, employee_email: str, employee_login_password: str):
+    return models.get_token(company_id, employee_email, employee_login_password)
+
 
 # ログインする
 @app.post(api_root + "/login")
-def login(company_id: int, employee_email: str, employee_login_password: str):
-    return models.login(company_id, employee_email, employee_login_password)
+async def login(request: Request):
+    payload = await request.json()
+    company_id = payload["company_id"]
+    employee_email = payload["employee_email"]
+    employee_login_password = payload["employee_login_password"]
+
+    data = models.login(company_id, employee_email, employee_login_password)
+
+    # もしdateにerrorというキーがあれば、それはエラーの内容
+    if data["error"] == "company_id or mail address is wrong.":
+        raise HTTPException(status_code=401, detail=data["会社IDかメールアドレスが間違っている、もしくは登録されていません。"])
+    if data["error"] == "password is wrong.":
+        raise HTTPException(status_code=401, detail=data["パスワードが間違っています。"])
+    return data
 
 
 # ログアウトする
@@ -136,7 +191,15 @@ def get_my_information(company_id: int, employee_id: int):
 
 # 社員情報を更新する
 @app.put(api_root + "/companies/{company_id}/employees/{employee_id}")
-def update_my_information(company_id: str, employee_id: int, old_employee_login_password: str, employee_name: str = "", employee_email: str = "", new_employee_login_password: str = "", commuting_expenses: int = 0):
+async def update_my_information(company_id: str, employee_id: int, request: Request):
+    payload = await request.json()
+
+    employee_name = payload["employee_name"]
+    employee_email = payload["employee_email"]
+    old_employee_login_password = payload["old_employee_login_password"]
+    new_employee_login_password = payload["new_employee_login_password"]
+    commuting_expenses = payload["commuting_expenses"]
+
     return models.update_my_information(company_id, employee_id, employee_name, employee_email, old_employee_login_password, new_employee_login_password, commuting_expenses)
 
 
@@ -177,9 +240,13 @@ def finish_overwork_at(company_id: int, employee_id: int):
 
 
 # 業務内容を記録する
-@app.post(api_root + "/companies/{company_id}/employees/{employee_id}/work_contents")
-def work_contents(company_id: int, employee_id: int, work_record_id: int, workplace: str, work_content: str):
-    # start_work_atは通常勤務でも残業でもいい。
+@app.post(api_root + "/companies/{company_id}/employees/{employee_id}/work_records/{work_record_id}/work_contents")
+async def work_contents(company_id: int, employee_id: int, work_record_id: int, request: Request):
+    payload = await request.json()
+
+    workplace = payload["workplace"]
+    work_content = payload["work_content"]
+
     return models.work_contents(company_id, employee_id, work_record_id, workplace, work_content)
 
 
@@ -190,16 +257,32 @@ def get_my_monthly_work_records(company_id: int, employee_id: int, year: int, mo
 
 
 # 勤怠の修正を申請する
-@app.post(api_root + "/companies/{company_id}/employees/{employee_id}/monthly_work_records/{year}/{month}/request_correction")
-def request_correction(company_id: int, employee_id: int, work_date: str, start_work_at: str = "", finish_work_at: str = "", start_break_at: str = "", finish_break_at: str = "", start_overwork_at: str = "", finish_overwork_at: str = "", workplace: str = "", work_contents: str = ""):
-    # add: request_correction_id
-    return models.request_correction(company_id, employee_id, work_date, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overwork_at, finish_overwork_at, workplace, work_contents)
+@app.post(api_root + "/companies/{company_id}/employees/{employee_id}/work_records/{work_record_id}/corrections/request")
+async def request_correction(company_id: int, employee_id: int, work_record_id: int, request: Request):
+    # TODO: "/companies/{company_id}/employees/{employee_id}/work_records/{work_record_id}/corrections"は修正した内容を見れるエンドポイントにする
+    payload = await request.json()
+
+    start_work_at = payload["start_work_at"]
+    finish_work_at = payload["finish_work_at"]
+    start_break_at = payload["start_break_at"]
+    finish_break_at = payload["finish_break_at"]
+    start_overwork_at = payload["start_overwork_at"]
+    finish_overwork_at = payload["finish_overwork_at"]
+    workplace = payload["workplace"]
+    work_contents = payload["work_contents"]
+
+    return models.request_correction(company_id, employee_id, work_record_id, start_work_at, finish_work_at, start_break_at, finish_break_at, start_overwork_at, finish_overwork_at, workplace, work_contents)
 
 
 # 有給の依頼を出す
-@app.post(api_root + "/companies/{company_id}/employees/{employee_id}/request_paid_leave")
-def request_paid_leave(company_id: int, employee_id: int, paid_leave_date: datetime.date, work_type: str, paid_leave_reason: str):
-    # add: request_paid_leave_id
+@app.post(api_root + "/companies/{company_id}/employees/{employee_id}/paid_leaves/request")
+async def request_paid_leave(company_id: int, employee_id: int, request: Request):
+    payload = await request.json()
+
+    paid_leave_date = payload["paid_leave_date"]
+    work_type = payload["work_type"]
+    paid_leave_reason = payload["paid_leave_reason"]
+
     return models.request_paid_leave(company_id, employee_id, paid_leave_date, work_type, paid_leave_reason)
 
 

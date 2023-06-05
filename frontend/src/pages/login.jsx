@@ -1,29 +1,45 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
+import axios from "axios";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useContext, useState } from "react";
+
+import { UserContext } from "../utils/Context";
 
 const Login = () => {
   const router = useRouter();
-  const [useremail, setUseremail] = useState("");
-  const [userpassword, setPassword] = useState("");
-
+  const [employee_email, setUseremail] = useState("");
+  const [employee_login_password, setPassword] = useState("");
+  const { loginUser } = useContext(UserContext);
   const clickHandler = async (event) => {
+    const baseUrl = "http://localhost:8000/api/v1";
     event.preventDefault();
-    const response = await fetch("/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        useremail,
-        userpassword,
-      }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      router.push("/", "home");
-    } else {
-      alert("ログインに失敗しました？");
+
+    try {
+      const response = await axios.post(
+        `${baseUrl}/login`,
+        {
+          company_id: 1,
+          employee_email,
+          employee_login_password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = response.data;
+
+      if (data.is_active) {
+        loginUser(data.employee_name);
+        router.push("/", "/");
+      } else {
+        alert("ログインに失敗しました");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("ログインに失敗しました");
     }
   };
 
@@ -32,7 +48,7 @@ const Login = () => {
       <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">ログイン</h2>
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Wakreate勤怠</h2>
           </div>
           <form className="mt-8 space-y-6" action="#" method="POST">
             <input type="hidden" name="remember" defaultValue="true" />
@@ -48,8 +64,8 @@ const Login = () => {
                   autoComplete="current-email"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Email or Username"
-                  value={useremail}
+                  placeholder="メールアドレス"
+                  value={employee_email}
                   onChange={(event) => setUseremail(event.target.value)}
                 />
               </div>
@@ -65,8 +81,8 @@ const Login = () => {
                   autoComplete="current-password"
                   required
                   className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Password"
-                  value={userpassword}
+                  placeholder="パスワード"
+                  value={employee_login_password}
                   onChange={(event) => setPassword(event.target.value)}
                 />
               </div>
@@ -75,7 +91,7 @@ const Login = () => {
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 <Link href="/Forgotpass" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
+                  パスワードを再発行する
                 </Link>
               </div>
             </div>
@@ -89,14 +105,14 @@ const Login = () => {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <div className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
                 </span>
-                Login
+                ログイン
               </button>
             </div>
             <div className="justify-between">
               <div className="text-sm">
-                <p>Do not have an account?</p>
+                <p>※初めての方は新規登録を行ってください</p>
                 <a href="Singup" className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500">
-                  Sing Up
+                  新規登録はこちら
                 </a>
               </div>
             </div>

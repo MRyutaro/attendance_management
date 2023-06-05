@@ -1,3 +1,6 @@
+# env
+db.env
+
 # venv
 venv/
 
@@ -23,4 +26,3 @@ build/
 *.swp
 .DS_Store
 set_env_vars.sh
-*sample*
