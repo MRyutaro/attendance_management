@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Company(models.Model):
+    # TODO: 会社を新規登録した日時を保存する
     company_id = models.AutoField(primary_key=True)
     company_name = models.CharField(max_length=30)
     company_email = models.CharField(max_length=30, unique=True)
@@ -9,14 +10,15 @@ class Company(models.Model):
 
 
 class User(models.Model):
-    # Company削除時にUserも削除する
-    company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
+    # Company削除時にUserも削除する設定になってる
+    company = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
     user_id = models.AutoField(primary_key=True)
     user_name = models.CharField(max_length=30)
     user_email = models.CharField(max_length=30)
     user_login_password = models.CharField(max_length=30)
     authority = models.CharField(max_length=10, choices=[('ADMIN', '管理者'), ('USER', '一般ユーザ')], default='user')
-    commuting_expenses = models.IntegerField(default=0)
+    # TODO: 0以上の整数にする
+    commuting_expenses = models.IntegerField(default=0, null=True, blank=True)
     is_active = models.BooleanField(default=False)
 
     class Meta:
@@ -26,8 +28,8 @@ class User(models.Model):
 
 
 class WorkRecord(models.Model):
-    # User削除時にWorkRecordも削除する
-    user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
+    # User削除時にWorkRecordも削除する設定になってる
+    user = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
     work_date = models.DateField()
     start_work_at = models.TimeField(null=True, blank=True)
     finish_work_at = models.TimeField(null=True, blank=True)
@@ -45,8 +47,8 @@ class WorkRecord(models.Model):
 
 
 class PaidLeave(models.Model):
-    company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
     date = models.DateField()
     work_type = models.CharField(
         max_length=20,
@@ -64,8 +66,8 @@ class PaidLeave(models.Model):
 
 class PaidLeaveRecord(models.Model):
     paid_leave_record_id = models.AutoField(primary_key=True)
-    company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
     paid_leave_date = models.DateField()
     work_type = models.CharField(max_length=30)
     paid_leave_reason = models.CharField(max_length=50)
@@ -85,8 +87,8 @@ class PaidLeaveRecord(models.Model):
 
 
 class PaidLeaveDay(models.Model):
-    company_id = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, db_column='user_id', on_delete=models.CASCADE)
     year = models.IntegerField(unique=True)
     max_paid_leave_days = models.FloatField()
     used_paid_leave_days = models.FloatField()

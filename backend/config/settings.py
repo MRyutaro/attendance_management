@@ -141,6 +141,5 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'プロジェクト名',
     'DESCRIPTION': '詳細',
     'VERSION': '1.0.0',
-    # api/schemaを表示しない
     'SERVE_INCLUDE_SCHEMA': False,
 }

@@ -4,6 +4,10 @@ from rest_framework import serializers
 from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User,
                      WorkRecord)
 
+"""
+Models.pyで定義したモデルをJSON形式に変換するためのクラス
+"""
+
 
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
