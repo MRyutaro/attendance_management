@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import dotenv
@@ -33,7 +34,7 @@ DEBUG = os.environ.get("DEBUG")
 ALLOWED_HOSTS = []
 
 
-# Application definition
+# ===== Application definition =====
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_spectacular',
+    'rest_framework.authtoken',
     'api'
 ]
 
@@ -108,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+# ===== Internationalization =====
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'ja'
@@ -120,7 +122,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# ===== Static files (CSS, JavaScript, Images) =====
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
@@ -130,16 +132,94 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# Swagger用の設定
-
+# ===== REST Frameworkの設定 =====
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # 認証が必要
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    # JWT認証
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
 }
 
+# ===== Swagger用の設定 ======
 SPECTACULAR_SETTINGS = {
     'TITLE': 'プロジェクト名',
     'DESCRIPTION': '詳細',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+# ===== メールサーバ =====
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get("EMAIL_HOST")
+    EMAIL_PORT = os.environ.get("EMAIL_PORT")
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+    EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
+    EMAIL_USE_SSL = os.environ.get("EMAIL_USE_SSL")
+
+# ===== jwt認証 =====
+SIMPLE_JWT = {
+    # アクセストークン
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    # リフレッシュトークン. データベースに保存される器官
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+    # 認証タイプ
+    'AUTH_HEADER_TYPES': ('JWT'),
+    # 認証トークン
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',)
+}
+
+# DJOSER = {
+#     # メールアドレスでログイン
+#     'LOGIN_FIELD': 'email',
+#     # アカウント本登録メール
+#     'SEND_ACTIVATION_EMAIL': True,
+#     # アカウント本登録完了メール
+#     'SEND_CONFIRMATION_EMAIL': True,
+#     # メールアドレス変更完了メール
+#     'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+#     # パスワード変更完了メール
+#     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+#     # アカウント登録時に確認用パスワード必須
+#     'USER_CREATE_PASSWORD_RETYPE': True,
+#     # メールアドレス変更時に確認用メールアドレス必須
+#     'SET_USERNAME_RETYPE': True,
+#     # パスワード変更時に確認用パスワード必須
+#     'SET_PASSWORD_RETYPE': True,
+#     # アカウント本登録用URL
+#     'ACTIVATION_URL': 'activate/{uid}/{token}',
+#     # メールアドレスリセット完了用URL
+#     'USERNAME_RESET_CONFIRM_URL': 'email/reset/confirm/{uid}/{token}',
+#     # パスワードリセット完了用URL
+#     'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+#     # カスタムユーザー用シリアライザー
+#     'SERIALIZERS': {
+#         'user_create': 'accounts.serializers.UserSerializer',
+#         'user': 'accounts.serializers.UserSerializer',
+#         'current_user': 'accounts.serializers.UserSerializer',
+#     },
+#     'EMAIL': {
+#         # アカウント本登録
+#         'activation': 'accounts.email.ActivationEmail',
+#         # アカウント本登録完了
+#         'confirmation': 'accounts.email.ConfirmationEmail',
+#         # パスワードリセット
+#         'password_reset': 'accounts.email.PasswordResetEmail',
+#         # パスワードリセット完了
+#         'password_changed_confirmation': 'accounts.email.PasswordChangedConfirmationEmail',
+#         # メールアドレスリセット
+#         'username_reset': 'accounts.email.UsernameResetEmail',
+#         # メールアドレスリセット完了
+#         'username_changed_confirmation': 'accounts.email.UsernameChangedConfirmationEmail',
+#     },
+# }
+
+AUTH_USER_MODEL = 'api.CustomUser'
