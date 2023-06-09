@@ -223,3 +223,9 @@ SIMPLE_JWT = {
 # }
 
 AUTH_USER_MODEL = 'api.CustomUser'
+
+# TODO: すべてのホストからのアクセスを許可。本番環境では変更する
+ALLOWED_HOSTS = ['*']
+
+# TODO: すべてのオリジンからのアクセスを許可。本番環境では変更する
+CSRF_TRUSTED_ORIGINS = ['*']
