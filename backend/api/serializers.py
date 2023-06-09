@@ -1,7 +1,6 @@
-from api.models import User
 from rest_framework import serializers
 
-from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User,
+from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser,
                      WorkRecord)
 
 """
@@ -17,7 +16,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = '__all__'
 
 

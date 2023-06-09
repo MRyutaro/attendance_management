@@ -1,13 +1,14 @@
-from api.models import User
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User,
+from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser,
                      WorkRecord)
-from .serializers import (CompanySerializer, PaidLeaveDaySerializer,
-                          PaidLeaveRecordSerializer, PaidLeaveSerializer,
-                          UserSerializer, WorkRecordSerializer)
+from .serializers import (
+    CompanySerializer, PaidLeaveDaySerializer,
+    PaidLeaveRecordSerializer, PaidLeaveSerializer,
+    UserSerializer, WorkRecordSerializer
+)
 
 
 class CompanyCreateAPIView(generics.CreateAPIView):
@@ -41,17 +42,17 @@ class CompanyUpdateAPIView(APIView):
             return Response({'message': 'This email address is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         company_login_password = request.data.get('company_login_password')
-        if company.company_login_password != company_login_password:
+        if company.password != company_login_password:
             return Response({'message': 'The password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 会社名が変更されていたら
         new_company_name = request.data.get('company_name')
-        old_company_name = company.company_name
+        old_company_name = company.name
         if new_company_name is None:
             return Response({'message': 'The company name is empty.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if new_company_name != old_company_name:
-            company.company_name = new_company_name
+            company.name = new_company_name
             company.save()
             return Response({'message': 'The company name has been changed.'}, status=status.HTTP_200_OK)
 
@@ -59,13 +60,13 @@ class CompanyUpdateAPIView(APIView):
 
 
 class UserCreateAPIView(generics.CreateAPIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
 
     # 同じメールアドレスが登録されていないか確認
     def post(self, request):
         user_email = request.data.get('user_email')
-        user = User.objects.filter(user_email=user_email).first()
+        user = CustomUser.objects.filter(user_email=user_email).first()
         if user:
             return Response({'message': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,14 +87,15 @@ class UserCreateAPIView(generics.CreateAPIView):
         company_id = request.data.get('company')
         company = Company.objects.get(company_id=company_id)
 
-        user = User.objects.create(
+        # TODO: これだとmodels.pyで作ったcreate_userが呼ばれない。create_userを呼び出す。
+        user = CustomUser.objects.create(
             user_name=user_name, user_email=user_email, user_login_password=user_login_password, authority=authority, commuting_expenses=commuting_expenses, company=company
         )
         return Response({'user_name': user_name, 'user_email': user_email}, status=status.HTTP_200_OK)
 
 
 class UserLoginAPIView(APIView):
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
 
     def post(self, request):
@@ -109,15 +111,15 @@ class UserLoginAPIView(APIView):
             return Response({'message': 'This company is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # ユーザが登録されていなかったら
-        user = User.objects.filter(company_id=company_id, user_email=user_email).first()
+        user = CustomUser.objects.filter(company_id=company_id, user_email=user_email).first()
         if not user:
             return Response({'message': 'This user is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # パスワードが間違っていたら
-        user = User.objects.filter(company=company, user_email=user_email, user_login_password=user_login_password).first()
+        user = CustomUser.objects.filter(company=company, user_email=user_email, user_login_password=user_login_password).first()
         if not user:
             return Response({'message': 'The password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_active = True
         user.save()
-        return Response({'company_id': company.company_id, 'user_id': user.user_id, 'is_active': user.is_active}, status=status.HTTP_200_OK)
+        return Response({'company_id': company, 'user_id': user.user_id, 'is_active': user.is_active}, status=status.HTTP_200_OK)
