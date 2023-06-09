@@ -118,7 +118,7 @@ class UserLoginAPIView(APIView):
         response = Response({'company_id': company.pk, 'user_id': user.pk, 'is_active': user.is_active}, status=status.HTTP_200_OK)
 
         # セッションIDをクッキーに設定
-        response.set_cookie('session_id', session.session_key)
+        response.set_cookie('sessionid', session.session_key)
 
         return response
 
@@ -127,12 +127,12 @@ class UserLogoutAPIView(APIView):
     permission_classes = [IsLoggedInUser]
 
     def post(self, request):
-        session_id = request.COOKIES.get('session_id')
-        # SessionStore(session_key=session_id).items()の中身にidが入ってる。
-        session = SessionStore(session_key=session_id)
+        sessionid = request.COOKIES.get('sessionid')
+        # SessionStore(session_key=sessionid).items()の中身にidが入ってる。
+        session = SessionStore(session_key=sessionid)
         # サーバー側のセッションを削除
         session.delete()
         response = Response({'message': 'Logout successfully.'}, status=status.HTTP_200_OK)
         # クライアント側のセッションを削除
-        response.delete_cookie('session_id')
+        response.delete_cookie('sessionid')
         return response

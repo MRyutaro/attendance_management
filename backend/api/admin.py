@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+# TODO: adminにアクセスしたときにも同じsessionが使われるようにする
+# from django.contrib.admin.sites import AdminSite
 
 from .models import (
     Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, WorkRecord
