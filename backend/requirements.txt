@@ -1,5 +1,4 @@
 django
 djangorestframework
 drf-spectacular
-djoser
 python-dotenv

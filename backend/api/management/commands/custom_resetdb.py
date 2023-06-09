@@ -20,6 +20,8 @@ class Command(BaseCommand):
 
         # データベースの削除
         call_command("flush", interactive=False, verbosity=0)
+        # TODO: migrationsファイルの削除
+        # call_command("delete_migrations")
 
         # マイグレーションの実行
         call_command("makemigrations")
