@@ -48,17 +48,17 @@ class CompanyUpdateAPIView(APIView):
             return Response({'message': 'This email address is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         company_login_password = request.data.get('company_login_password')
-        if company.company_login_password != company_login_password:
+        if company.password != company_login_password:
             return Response({'message': 'The password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 会社名が変更されていたら
         new_company_name = request.data.get('company_name')
-        old_company_name = company.company_name
+        old_company_name = company.name
         if new_company_name is None:
             return Response({'message': 'The company name is empty.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if new_company_name != old_company_name:
-            company.company_name = new_company_name
+            company.name = new_company_name
             company.save()
             return Response({'message': 'The company name has been changed.'}, status=status.HTTP_200_OK)
 
@@ -93,6 +93,7 @@ class UserCreateAPIView(generics.CreateAPIView):
         company_id = request.data.get('company')
         company = Company.objects.get(company_id=company_id)
 
+        # TODO: これだとmodels.pyで作ったcreate_userが呼ばれない。create_userを呼び出す。
         user = CustomUser.objects.create(
             user_name=user_name, user_email=user_email, user_login_password=user_login_password, authority=authority, commuting_expenses=commuting_expenses, company=company
         )

@@ -1,94 +1,75 @@
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
-from django.core.mail import send_mail
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 
 
 class Company(models.Model):
     # TODO: 会社を新規登録した日時を保存する
-    company_id = models.AutoField(primary_key=True)
-    company_name = models.CharField(max_length=30)
-    company_email = models.CharField(max_length=30, unique=True)
-    company_login_password = models.CharField(max_length=30)
+    name = models.CharField(max_length=30)
+    email = models.CharField(max_length=30, unique=True)
+    password = models.CharField(max_length=30)
 
     class Meta:
         verbose_name = _("company")
         verbose_name_plural = _("companies")
 
-    def __str__(self):
-        # pkを返す
-        # 外部キーで呼び出すときとかはこれが呼ばれる
-        # TODO: 自動でpkに設定されているから明記しなくてもいいかも
-        return str(self.pk)
-
-
-# class User(models.Model):
-#     # Company削除時にUserも削除する設定になってる
-#     company = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
-#     user_id = models.AutoField(primary_key=True)
-#     user_name = models.CharField(max_length=30)
-#     user_email = models.CharField(max_length=30)
-#     user_login_password = models.CharField(max_length=30)
-#     authority = models.CharField(max_length=10, choices=[('ADMIN', '管理者'), ('USER', '一般ユーザ')], default='user')
-#     # TODO: 0以上の整数にする
-#     commuting_expenses = models.IntegerField(default=0, null=True, blank=True)
-#     is_active = models.BooleanField(default=False)
-
-#     class Meta:
-#         constraints = [
-#             models.UniqueConstraint(fields=['company_id', 'user_email'], name='unique_user')
-#         ]
-
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, user_email, password, **extra_fields):
-        if not user_email:
-            raise ValueError('メールアドレスは必須です')
+    use_in_migrations = True
 
-        user_email = self.normalize_email(user_email)
-        user_email = user_email.lower()
-        user = self.model(user_email=user_email, **extra_fields)
+    def _create_user(self, company, email, password, **extra_fields):
+        if not company:
+            raise ValueError(_('会社idは必須です。'))
+        if not email:
+            raise ValueError(_('メールアドレスは必須です。'))
+        if not password:
+            raise ValueError(_('パスワードは必須です。'))
+        email = self.normalize_email(email)
+        user = self.model(company=company, email=email, **extra_fields)
         user.set_password(password)
-        user.save()
-        # print(f"============user_email: {user_email}==============")
-        # print(f"============password: {user.password}==============")
-        return user
-
-    # django\contrib\auth\management\commands\createsuperuser.py参照
-    def create_superuser(self, user_email, password, **extra_fields):
-        user = self.create_user(user_email, password, **extra_fields)
-        user.is_superuser = True
-        user.is_staff = True
-        user.save()
+        user.save(using=self.db)
 
         return user
+
+    def create_user(self, company, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(company, email, password, **extra_fields)
+
+    def create_superuser(self, company, email, password, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('authority', 'ADMIN')
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('スーパーユーザーはis_staff=Trueでなければなりません。'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('スーパーユーザーはis_superuser=Trueでなければなりません。'))
+        if extra_fields.get('authority') != 'ADMIN':
+            raise ValueError(_('スーパーユーザーはauthority=ADMINでなければなりません。'))
+
+        return self._create_user(company, email, password, **extra_fields)
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    user_email = models.EmailField(max_length=255, unique=True)
-    user_name = models.CharField(max_length=255)
-    # TODO: passwordがAbstractBaseUserで定義されている。その変数名だけを変更したい。
-
+    email = models.EmailField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    password = models.CharField(max_length=128)
+    authority = models.CharField(
+        max_length=10, choices=[('ADMIN', '管理者'), ('USER', '一般ユーザ')], default='USER'
+    )
+    commuting_expenses = models.IntegerField(default=0, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
+    # カスタマイズしたモデルのCRUDのために必要
     objects = CustomUserManager()
 
-    EMAIL_FIELD = "user_email"
-    USERNAME_FIELD = 'user_email'
-
-    def __str__(self):
-        # pkを返す
-        return str(self.pk)
-
-    def clean(self):
-        super().clean()
-        self.email = self.__class__.objects.normalize_email(self.email)
-
-    def email_user(self, subject, message, from_email=None, **kwargs):
-        send_mail(subject, message, from_email, [self.email], **kwargs)
+    EMAIL_FIELD = "email"
+    USERNAME_FIELD = 'email'
 
 
 class WorkRecord(models.Model):
@@ -101,7 +82,9 @@ class WorkRecord(models.Model):
     finish_break_at = models.TimeField(null=True, blank=True)
     start_overwork_at = models.TimeField(null=True, blank=True)
     finish_overwork_at = models.TimeField(null=True, blank=True)
-    workplace = models.CharField(max_length=10, choices=[('OFFICE', 'オフィス'), ('HOME', '在宅'), ('OTHERS', 'その他')], default='OFFICE')
+    workplace = models.CharField(
+        max_length=10, choices=[('OFFICE', 'オフィス'), ('HOME', '在宅'), ('OTHERS', 'その他')], default='OFFICE'
+    )
     work_contents = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
@@ -129,7 +112,6 @@ class PaidLeave(models.Model):
 
 
 class PaidLeaveRecord(models.Model):
-    paid_leave_record_id = models.AutoField(primary_key=True)
     company = models.ForeignKey(Company, db_column='company_id', on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, db_column='user_id', on_delete=models.CASCADE)
     paid_leave_date = models.DateField()

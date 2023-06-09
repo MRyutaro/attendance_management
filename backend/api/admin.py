@@ -25,19 +25,19 @@ class UserAdminCustom(UserAdmin):
     fieldsets = (
         (None, {
             'fields': (
-                'user_email',
-                'user_name',
-                'user_login_password',
+                'email',
+                'name',
+                'password',
                 'is_active',
                 'is_staff',
                 'is_superuser',
             )
         }),
     )
-    list_display = ("user_name", "user_email", "is_staff", "is_superuser", "is_active")
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups")
-    search_fields = ("user_name", "user_email")
-    ordering = ("user_name", )
+    list_display = ("name", "email", "is_staff", "is_superuser", "is_active")
+    list_filter = ("is_staff", "is_superuser", "is_active")
+    search_fields = ("name", "email")
+    ordering = ("name", )
 
 
 admin.site.register(User, UserAdminCustom)
