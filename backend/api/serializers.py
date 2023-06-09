@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser,
-                     WorkRecord)
+from .models import (
+    Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser, WorkRecord
+)
 
 """
 Models.pyで定義したモデルをJSON形式に変換するためのクラス
@@ -17,7 +18,19 @@ class CompanySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = '__all__'
+        # この値だけを使う？
+        fields = ['id', 'company', 'email', 'password']
+
+        # こんな感じで、このクラスでバリデーションを行う。
+        # 参考 -> https://leben.mobi/blog/django_rest_flamework_api/python/
+        # def validate_username(self, username):
+        #     if 'hoge' in username.lower():
+        #         raise serializers.ValidationError('The username `hoge` can not be used.')
+        #     return username
+        # def validate(self, data):
+        #     if 'hoge' in data['first_name'].lower() and 'fuga' in data['last_name'].lower():
+        #         raise serializers.ValidationError('The first name `hoge` and last name `fuga` can not be used.')
+        #     return data
 
 
 class WorkRecordSerializer(serializers.ModelSerializer):

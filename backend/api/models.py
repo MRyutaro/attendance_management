@@ -1,15 +1,16 @@
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 
 
 class Company(models.Model):
-    # TODO: 会社を新規登録した日時を保存する
-    name = models.CharField(max_length=30)
     email = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=30)
     password = models.CharField(max_length=30)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = _("company")
@@ -57,18 +58,21 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    username_validator = UnicodeUsernameValidator()
+
     email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     password = models.CharField(max_length=128)
     authority = models.CharField(
         max_length=10, choices=[('ADMIN', '管理者'), ('USER', '一般ユーザ')], default='USER'
     )
     commuting_expenses = models.IntegerField(default=0, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    # カスタマイズしたモデルのCRUDのために必要
+    # カスタマイズしたモデルのCRUDのために必要. objects.create_user()などを使えるようになる
     objects = CustomUserManager()
 
     EMAIL_FIELD = "email"

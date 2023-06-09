@@ -1,3 +1,4 @@
+from django.contrib.sessions.backends.db import SessionStore
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,8 @@ from .serializers import (
     PaidLeaveRecordSerializer, PaidLeaveSerializer,
     UserSerializer, WorkRecordSerializer
 )
+from rest_framework.permissions import AllowAny
+from .permissions import IsLoggedInUser
 
 
 class CompanyCreateAPIView(generics.CreateAPIView):
@@ -17,15 +20,15 @@ class CompanyCreateAPIView(generics.CreateAPIView):
 
     # 同じメールアドレスが登録されていないか確認
     def post(self, request):
-        company_email = request.data.get('company_email')
-        company = Company.objects.filter(company_email=company_email).first()
+        email = request.data.get('email')
+        company = Company.objects.filter(email=email).first()
         if company:
             return Response({'message': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
         # requestのpassword以外のデータを返す
-        company_name = request.data.get('company_name')
+        name = request.data.get('name')
         company = Company.objects.create(
-            company_name=company_name, company_email=company_email, company_login_password=request.data.get('company_login_password'))
-        return Response({'company_name': company_name, 'company_email': company_email}, status=status.HTTP_200_OK)
+            email=email, name=name, password=request.data.get('password'))
+        return Response({'company_name': name, 'company_email': email}, status=status.HTTP_200_OK)
 
 
 class CompanyUpdateAPIView(APIView):
@@ -35,91 +38,101 @@ class CompanyUpdateAPIView(APIView):
 
     # 同じメールアドレスが登録されていないか確認
     def put(self, request):
-        company_email = request.data.get('company_email')
-        company = Company.objects.filter(company_email=company_email).first()
-
+        email = request.data.get('email')
+        company = Company.objects.get(email=email)
         if not company:
             return Response({'message': 'This email address is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        company_login_password = request.data.get('company_login_password')
-        if company.password != company_login_password:
-            return Response({'message': 'The password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+        input_password = request.data.get('password')
 
-        # 会社名が変更されていたら
-        new_company_name = request.data.get('company_name')
-        old_company_name = company.name
-        if new_company_name is None:
-            return Response({'message': 'The company name is empty.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if new_company_name != old_company_name:
-            company.name = new_company_name
-            company.save()
-            return Response({'message': 'The company name has been changed.'}, status=status.HTTP_200_OK)
-
-        return Response({'message': 'No changes have been made.'}, status=status.HTTP_200_OK)
+        if input_password == company.password:
+            try:
+                company_name = request.data.get('name')
+                company.name = company_name
+                company.save()
+                return Response({'company_name': company_name}, status=status.HTTP_200_OK)
+            except Exception as e:
+                print(e)
+                return Response({'message': 'Company name is not updated.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'message': 'Password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserCreateAPIView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
-    # 同じメールアドレスが登録されていないか確認
     def post(self, request):
-        user_email = request.data.get('user_email')
-        user = CustomUser.objects.filter(user_email=user_email).first()
+        # TODO: これはSerializerでやるべき
+        # 同じメールアドレスが登録されていないか確認
+        email = request.data.get('user_email')
+        user = CustomUser.objects.filter(email=email).first()
         if user:
             return Response({'message': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_name = request.data.get('user_name')
-        user_login_password = request.data.get('user_login_password')
-        authority = request.data.get('authority')
-        # TODO: もし交通費がなかったら0を入れる
-        # TODO: もし交通費が0より小さかったらエラーを返す
-        commuting_expenses = request.data.get('commuting_expenses')
-        print(f"commuting_expenses: {commuting_expenses}")
-        if commuting_expenses is str:
-            return Response({'message': 'The commuting_expenses must be integer.'}, status=status.HTTP_400_BAD_REQUEST)
-        elif commuting_expenses is None or commuting_expenses == '':
-            commuting_expenses = 0
-        else:
-            commuting_expenses = int(commuting_expenses)
+        password = request.data.get('password')
 
-        company_id = request.data.get('company')
-        company = Company.objects.get(company_id=company_id)
+        company_id = request.data.get('company_id')
+        company = Company.objects.get(pk=company_id)
 
-        # TODO: これだとmodels.pyで作ったcreate_userが呼ばれない。create_userを呼び出す。
-        user = CustomUser.objects.create(
-            user_name=user_name, user_email=user_email, user_login_password=user_login_password, authority=authority, commuting_expenses=commuting_expenses, company=company
+        user = CustomUser.objects.create_user(
+            company=company, email=email, password=password
         )
-        return Response({'user_name': user_name, 'user_email': user_email}, status=status.HTTP_200_OK)
+        return Response({'user_email': email}, status=status.HTTP_200_OK)
 
 
 class UserLoginAPIView(APIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request):
         company_id = request.data.get('company')
-        user_email = request.data.get('user_email')
-        # TODO: パスワードのハッシュ化
-        user_login_password = request.data.get('user_login_password')
+        email = request.data.get('email')
+        password = request.data.get('password')
 
         # 会社が登録されていなかったら
-        print(f"company_id: {company_id}")
-        company = Company.objects.filter(company_id=company_id).first()
+        company = Company.objects.get(pk=company_id)
         if not company:
             return Response({'message': 'This company is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # ユーザが登録されていなかったら
-        user = CustomUser.objects.filter(company_id=company_id, user_email=user_email).first()
+        user = CustomUser.objects.get(company=company, email=email)
         if not user:
             return Response({'message': 'This user is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # パスワードが間違っていたら
-        user = CustomUser.objects.filter(company=company, user_email=user_email, user_login_password=user_login_password).first()
-        if not user:
+        if not user.check_password(password):
             return Response({'message': 'The password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_active = True
         user.save()
-        return Response({'company_id': company, 'user_id': user.user_id, 'is_active': user.is_active}, status=status.HTTP_200_OK)
+
+        # セッションにユーザ情報を保存
+        session = SessionStore()
+        session['user_id'] = user.pk
+        session['company_id'] = company.pk
+        session.save()
+
+        response = Response({'company_id': company.pk, 'user_id': user.pk, 'is_active': user.is_active}, status=status.HTTP_200_OK)
+
+        # セッションIDをクッキーに設定
+        response.set_cookie('session_id', session.session_key)
+
+        return response
+
+
+class UserLogoutAPIView(APIView):
+    permission_classes = [IsLoggedInUser]
+
+    def post(self, request):
+        session_id = request.COOKIES.get('session_id')
+        # SessionStore(session_key=session_id).items()の中身にidが入ってる。
+        session = SessionStore(session_key=session_id)
+        # サーバー側のセッションを削除
+        session.delete()
+        response = Response({'message': 'Logout successfully.'}, status=status.HTTP_200_OK)
+        # クライアント側のセッションを削除
+        response.delete_cookie('session_id')
+        return response

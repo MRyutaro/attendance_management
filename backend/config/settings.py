@@ -126,16 +126,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
 }
 
 # ===== Swagger用の設定 ======
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'プロジェクト名',
+    'TITLE': 'Django-API',
     'DESCRIPTION': '詳細',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
 }
 
+# ===== ユーザー認証用の設定 =====
 AUTH_USER_MODEL = 'api.CustomUser'
 
 # TODO: すべてのホストからのアクセスを許可。本番環境では変更する
