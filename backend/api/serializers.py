@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser,
                      WorkRecord)
@@ -7,17 +6,6 @@ from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUs
 """
 Models.pyで定義したモデルをJSON形式に変換するためのクラス
 """
-
-
-# トークンを発行するためのクラス
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-
-    @classmethod
-    def get_token(cls, user):
-        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
-
-        # Add custom claims
-        return token
 
 
 class CompanySerializer(serializers.ModelSerializer):

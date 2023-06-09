@@ -7,14 +7,6 @@ from django.core.management.base import BaseCommand
 class Command(BaseCommand):
     help = "Create a new Superuser and Company based on the contents of the .env file"
 
-    def add_arguments(self, parser):
-        parser.add_argument(
-            "--noinput",
-            dest="noinput",
-            action="store_true",
-            help="Do not prompt for user input",
-        )
-
     def normalize_email(self, email):
         """
         Normalize the email address by lowercasing the domain part of it.
@@ -29,11 +21,6 @@ class Command(BaseCommand):
         return email
 
     def handle(self, *args, **options):
-        if not options["noinput"]:
-            # エラーをはく
-            self.stdout.write(self.style.ERROR("You must use --noinput with this command"))
-            return
-
         # 会社情報を作成
         # .envファイルから会社情報を取得
         try:

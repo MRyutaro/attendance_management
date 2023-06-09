@@ -1,6 +1,5 @@
 django
 djangorestframework
-djangorestframework-simplejwt
 drf-spectacular
 djoser
 python-dotenv

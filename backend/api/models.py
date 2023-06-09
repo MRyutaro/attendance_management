@@ -29,7 +29,10 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(company=company, email=email, **extra_fields)
         user.set_password(password)
-        user.save(using=self.db)
+        try:
+            user.save(using=self.db)
+        except Exception as e:
+            raise ValueError(f"Failed to save user: {e}")
 
         return user
 

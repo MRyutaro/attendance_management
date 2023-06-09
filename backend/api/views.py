@@ -1,20 +1,14 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser,
                      WorkRecord)
 from .serializers import (
-    MyTokenObtainPairSerializer,
     CompanySerializer, PaidLeaveDaySerializer,
     PaidLeaveRecordSerializer, PaidLeaveSerializer,
     UserSerializer, WorkRecordSerializer
 )
-
-
-class ObtainTokenPairWithColorView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
 
 
 class CompanyCreateAPIView(generics.CreateAPIView):
@@ -128,4 +122,4 @@ class UserLoginAPIView(APIView):
 
         user.is_active = True
         user.save()
-        return Response({'company_id': company.company_id, 'user_id': user.user_id, 'is_active': user.is_active}, status=status.HTTP_200_OK)
+        return Response({'company_id': company, 'user_id': user.user_id, 'is_active': user.is_active}, status=status.HTTP_200_OK)
