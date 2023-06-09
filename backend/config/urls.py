@@ -4,7 +4,7 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     # ルートディレクトリにアクセスした場合は、admin.urlsにリダイレクトする
-    path('', RedirectView.as_view(url='admin/', permanent=True)),
+    path('', RedirectView.as_view(url='api/', permanent=True)),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls'), name='api'),
 ]
