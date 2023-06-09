@@ -43,7 +43,9 @@ class Command(BaseCommand):
 
         # 会社情報を作成
         # もしすでにemailが存在していたら
-        if not Company.objects.filter(email=company_email).exists():
+        if Company.objects.filter(email=company_email).exists():
+            self.stdout.write(self.style.SUCCESS("Company already exists!!!"))
+        else:
             try:
                 company = Company(
                     name=company_name, email=company_email, password=company_password
@@ -52,8 +54,8 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Failed to create company: {e}"))
                 return
-
-        self.stdout.write(self.style.SUCCESS("Company created successfully"))
+            finally:
+                self.stdout.write(self.style.SUCCESS("Company created successfully"))
 
         # スーパーユーザーを作成
         # .envファイルからスーパーユーザー情報を取得
@@ -82,7 +84,9 @@ class Command(BaseCommand):
             return
 
         # スーパーユーザーを作成
-        if not CustomUser.objects.filter(email=superuser_email).exists():
+        if CustomUser.objects.filter(email=superuser_email).exists():
+            self.stdout.write(self.style.SUCCESS("Superuser already exists!!!"))
+        else:
             try:
                 superuser = CustomUser.objects.create_superuser(
                     company=company, name=superuser_name, email=superuser_email, password=superuser_password
@@ -91,5 +95,5 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Failed to create superuser: {e}"))
                 return
-
-        self.stdout.write(self.style.SUCCESS("Superuser created successfully"))
+            finally:
+                self.stdout.write(self.style.SUCCESS("Superuser created successfully"))
