@@ -43,5 +43,8 @@
   "javascript.format.enable": false,
   "typescript.format.enable": false,
   "prettier.printWidth": 200,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
+  }
 }

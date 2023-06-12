@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -128,7 +129,11 @@ class Belonging(TimeStampedModel, models.Model):
 
 # 誰が誰を招待したかを管理する
 class Invitation(TimeStampedModel, models.Model):
-    inviter = models.ForeignKey(User, on_delete=models.CASCADE, related_name=_('招待した人'))
+    inviter = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name=_('招待した人'),
+        help_text=_('招待した人のユーザーIDです。')
+    )
     # 招待された人のメールアドレス
     # TODO: これをもとに招待用のURLを作成する
     # TODO: 招待された人がもし会員登録していなかったら、会員登録画面に飛ばす
@@ -142,17 +147,19 @@ class Invitation(TimeStampedModel, models.Model):
         help_text=_('招待URLの有効期限です。デフォルトは1日です。')
     )
 
+    def clean(self):
+        if self.expiration_date < timezone.now():
+            raise ValidationError(_('招待URLの有効期限が切れています。'))
+        # 招待した人の会社を取得
+        inviter_company = Belonging.objects.get(user=self.inviter).company
+        if inviter_company != self.company:
+            raise ValidationError(_('招待した人と会社が異なります。'))
+        if self.inviter.role == 'employee':
+            raise ValidationError(_('従業員の権限では招待できません。'))
+
     class Meta:
         verbose_name = _("招待")
         verbose_name_plural = _("招待")
-        # inviterのroleがownerかmanagerの時にinviteeを招待できる
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(inviter__role='owner') | models.Q(inviter__role='manager'),
-                name='check_inviter_role',
-                violation_error_message=_('招待者の権限が不正です。')
-            )
-        ]
 
 
 class WorkRecord(TimeStampedModel, models.Model):
