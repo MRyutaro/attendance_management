@@ -3,8 +3,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.utils.translation import gettext_lazy as _
 from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class TimeStampedModel(models.Model):
@@ -52,25 +53,40 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser, TimeStampedModel):
+    # TODO: 会社には属してない人が見るページを作る
     """カスタムユーザーモデル"""
     username_validator = UnicodeUsernameValidator()
 
     email = models.EmailField(
-        _("email address"),
         unique=True,
         error_messages={
-            "unique": _("A user with that email already exists."),
+            "unique": _("このメールアドレスは既に登録されています。"),
         },
     )
     username = models.CharField(
-        _("username"),
         max_length=150,
         blank=True,
         null=True,
         help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+            "150字以下の半角英数字で入力してください。"
         ),
         validators=[username_validator],
+    )
+    # owner, manager, employeeの3種類
+    role = models.CharField(
+        max_length=10,
+        choices=[
+            ('owner', _('オーナー')),
+            ('manager', _('マネージャー')),
+            ('employee', _('従業員')),
+        ],
+        default='employee',
+        help_text=_(
+            'ユーザーの権限を設定します。\
+            ownerは全ての権限を持ちます。\
+            managerは従業員の管理ができます。\
+            employeeは従業員の勤怠を入力できます。'
+        ),
     )
     date_joined = None
 
@@ -110,16 +126,33 @@ class Belonging(TimeStampedModel, models.Model):
         ]
 
 
+# 誰が誰を招待したかを管理する
 class Invitation(TimeStampedModel, models.Model):
-    # 誰が誰を招待したかを管理する
     inviter = models.ForeignKey(User, on_delete=models.CASCADE, related_name=_('招待した人'))
-    invitee = models.ForeignKey(User, on_delete=models.CASCADE, related_name=_('招待された人'))
+    # 招待された人のメールアドレス
+    # TODO: これをもとに招待用のURLを作成する
+    # TODO: 招待された人がもし会員登録していなかったら、会員登録画面に飛ばす
+    invitee_email = models.CharField(max_length=30)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     token = models.CharField(max_length=30, unique=True)
+    # tokenの有効期限は1日
+    EXPIRIATION_DAYS = 1
+    expiration_date = models.DateTimeField(
+        default=timezone.now() + timezone.timedelta(days=EXPIRIATION_DAYS),
+        help_text=_('招待URLの有効期限です。デフォルトは1日です。')
+    )
 
     class Meta:
         verbose_name = _("招待")
         verbose_name_plural = _("招待")
+        # inviterのroleがownerかmanagerの時にinviteeを招待できる
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(inviter__role='owner') | models.Q(inviter__role='manager'),
+                name='check_inviter_role',
+                violation_error_message=_('招待者の権限が不正です。')
+            )
+        ]
 
 
 class WorkRecord(TimeStampedModel, models.Model):
