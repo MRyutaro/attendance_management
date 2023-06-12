@@ -82,18 +82,44 @@ class User(AbstractUser, TimeStampedModel):
     objects = UserManager()
 
     class Meta:
+        verbose_name = _("ユーザー")
+        verbose_name_plural = _("ユーザー")
         # アプリ名_モデル名を動的に生成
-        db_table = '{}_{}'.format('app', 'user')
+        db_table = '{}_{}'.format('api', 'user')
 
 
 class Company(TimeStampedModel, models.Model):
     email = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=30)
-    password = models.CharField(max_length=30)
 
     class Meta:
-        verbose_name = _("company")
-        verbose_name_plural = _("companies")
+        verbose_name = _("会社")
+        verbose_name_plural = _("会社")
+
+
+class Belonging(TimeStampedModel, models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    is_admin = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _("所属")
+        verbose_name_plural = _("所属")
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'company'], name='unique_user_company')
+        ]
+
+
+class Invitation(TimeStampedModel, models.Model):
+    # 誰が誰を招待したかを管理する
+    inviter = models.ForeignKey(User, on_delete=models.CASCADE, related_name=_('招待した人'))
+    invitee = models.ForeignKey(User, on_delete=models.CASCADE, related_name=_('招待された人'))
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    token = models.CharField(max_length=30, unique=True)
+
+    class Meta:
+        verbose_name = _("招待")
+        verbose_name_plural = _("招待")
 
 
 class WorkRecord(TimeStampedModel, models.Model):
@@ -119,6 +145,8 @@ class WorkRecord(TimeStampedModel, models.Model):
     work_contents = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
+        verbose_name = _("勤怠記録")
+        verbose_name_plural = _("勤怠記録")
         constraints = [
             models.UniqueConstraint(fields=['user', 'work_date'], name='unique_work_record')
         ]
@@ -143,6 +171,8 @@ class PaidLeave(models.Model):
     )
 
     class Meta:
+        verbose_name = _("有給休暇")
+        verbose_name_plural = _("有給休暇")
         constraints = [
             models.UniqueConstraint(fields=['company', 'date'], name='unique_paid_leave')
         ]
@@ -169,6 +199,8 @@ class PaidLeaveRecord(TimeStampedModel, models.Model):
     reject_reason = models.CharField(max_length=50, null=True, blank=True)
 
     class Meta:
+        verbose_name = _("有給休暇申請記録")
+        verbose_name_plural = _("有給休暇申請記録")
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'paid_leave_date'],
@@ -177,7 +209,7 @@ class PaidLeaveRecord(TimeStampedModel, models.Model):
         ]
 
 
-class PaidLeaveDay(models.Model):
+class PaidLeaveDay(TimeStampedModel, models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE)
     year = models.IntegerField(unique=True)
@@ -185,6 +217,8 @@ class PaidLeaveDay(models.Model):
     used_paid_leave_days = models.FloatField()
 
     class Meta:
+        verbose_name = _("有給休暇日数")
+        verbose_name_plural = _("有給休暇日数")
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'year'],
