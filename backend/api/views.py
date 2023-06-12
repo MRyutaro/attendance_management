@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser,
+from .models import (Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User,
                      WorkRecord)
 from .serializers import (
     CompanySerializer, PaidLeaveDaySerializer,
@@ -59,7 +59,7 @@ class CompanyUpdateAPIView(APIView):
 
 
 class UserCreateAPIView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
@@ -67,7 +67,7 @@ class UserCreateAPIView(generics.CreateAPIView):
         # TODO: これはSerializerでやるべき
         # 同じメールアドレスが登録されていないか確認
         email = request.data.get('user_email')
-        user = CustomUser.objects.filter(email=email).first()
+        user = User.objects.filter(email=email).first()
         if user:
             return Response({'message': 'This email address is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -76,14 +76,14 @@ class UserCreateAPIView(generics.CreateAPIView):
         company_id = request.data.get('company_id')
         company = Company.objects.get(pk=company_id)
 
-        user = CustomUser.objects.create_user(
+        user = User.objects.create_user(
             company=company, email=email, password=password
         )
         return Response({'user_email': email}, status=status.HTTP_200_OK)
 
 
 class UserLoginAPIView(APIView):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
@@ -98,7 +98,7 @@ class UserLoginAPIView(APIView):
             return Response({'message': 'This company is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # ユーザが登録されていなかったら
-        user = CustomUser.objects.get(company=company, email=email)
+        user = User.objects.get(company=company, email=email)
         if not user:
             return Response({'message': 'This user is not registered.'}, status=status.HTTP_400_BAD_REQUEST)
 

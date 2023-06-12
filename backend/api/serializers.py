@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import (
-    Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, CustomUser, WorkRecord
+    Company, PaidLeave, PaidLeaveDay, PaidLeaveRecord, User, WorkRecord
 )
 
 """
@@ -17,7 +17,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
+        model = User
         # この値だけを使う？
         fields = ['id', 'company', 'email', 'password']
 

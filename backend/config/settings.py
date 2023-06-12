@@ -19,8 +19,6 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = []
-
 
 # ===== Application definition =====
 
@@ -139,7 +137,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 # ===== ユーザー認証用の設定 =====
-AUTH_USER_MODEL = 'api.CustomUser'
+AUTH_USER_MODEL = 'api.User'
 
 # TODO: すべてのホストからのアクセスを許可。本番環境では変更する
 ALLOWED_HOSTS = ['*']
@@ -152,11 +150,11 @@ CSRF_TRUSTED_ORIGINS = [
     LOCAL_BACKEND_URL,
 ]
 
-# ===== sessionの設定 =====
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_NAME = 'sessionid'
-# SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1週間
-# SESSION_COOKIE_SAMESITE = 'Lax'
-# SESSION_COOKIE_SECURE = False
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True
+# # ===== sessionの設定 =====
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# SESSION_COOKIE_NAME = 'sessionid'
+# # SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1週間
+# # SESSION_COOKIE_SAMESITE = 'Lax'
+# # SESSION_COOKIE_SECURE = False
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# SESSION_SAVE_EVERY_REQUEST = True

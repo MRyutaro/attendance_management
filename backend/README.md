@@ -19,7 +19,7 @@
 
 
 # エラー一覧
-- ダミーデータを入れる必要あり
+- 多分`eb.sqlite3`を一回削除してもう一回makemigrationsとmigrateをしたらいける。
 ```
 You are trying to add a non-nullable field 'group' to user without a default; we can't do that (the database needs something to populate existing rows).
 Please select a fix:
