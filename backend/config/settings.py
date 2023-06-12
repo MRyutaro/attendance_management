@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'rest_framework.authtoken',
+    'corsheaders',
     'api',
 ]
 
@@ -45,6 +46,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -148,4 +150,10 @@ LOCAL_BACKEND_URL = f'http://localhost:{os.environ.get("BACKEND_PORT")}'
 CSRF_TRUSTED_ORIGINS = [
     LOCAL_FRONTEND_URL,
     LOCAL_BACKEND_URL,
+]
+
+# ===== CORSの設定 =====
+CORS_ORIGIN_WHITELIST = [
+    LOCAL_BACKEND_URL,
+    LOCAL_FRONTEND_URL,
 ]
