@@ -31,6 +31,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_spectacular',
+<<<<<<< HEAD
+=======
+    'rest_framework.authtoken',
+    'corsheaders',
+>>>>>>> c10d9454b0a6c034abed76424438290dac4e9b16
     'api',
 ]
 
@@ -42,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -150,7 +156,7 @@ CSRF_TRUSTED_ORIGINS = [
     LOCAL_BACKEND_URL,
 ]
 
-# # ===== sessionの設定 =====
+# ===== sessionの設定 =====
 # SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 # SESSION_COOKIE_NAME = 'sessionid'
 # # SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1週間
@@ -158,3 +164,9 @@ CSRF_TRUSTED_ORIGINS = [
 # # SESSION_COOKIE_SECURE = False
 # SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # SESSION_SAVE_EVERY_REQUEST = True
+
+# ===== CORSの設定 =====
+CORS_ORIGIN_WHITELIST = [
+    LOCAL_BACKEND_URL,
+    LOCAL_FRONTEND_URL,
+]
