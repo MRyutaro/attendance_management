@@ -7,7 +7,7 @@ from rest_framework.permissions import BasePermission
 
 class IsLoggedInUser(BasePermission):
     def has_permission(self, request, view):
-        # もしcookieにsession_idがあればTrueを返す
+        # もしcookieにsessionidがあればTrueを返す
         if request.COOKIES.get('sessionid'):
             return True
         else:
