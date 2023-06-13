@@ -24,6 +24,3 @@ build/
 .DS_Store
 set_env_vars.sh
 *sample*
-
-# db
-**/db.sqlite3

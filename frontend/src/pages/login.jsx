@@ -110,7 +110,6 @@ const Login = () => {
             </div>
             <div className="justify-between">
               <div className="text-sm">
-                <p>※初めての方は新規登録を行ってください</p>
                 <a href="Singup" className="flex justify-end font-medium text-indigo-600 hover:text-indigo-500">
                   新規登録はこちら
                 </a>

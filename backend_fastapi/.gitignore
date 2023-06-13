@@ -1,5 +1,8 @@
+# env
+db.env
+
 # venv
-venv
+venv/
 
 # python cache
 *.pyc
@@ -23,7 +26,3 @@ build/
 *.swp
 .DS_Store
 set_env_vars.sh
-*sample*
-
-# db
-**/db.sqlite3
