@@ -5,12 +5,14 @@ import dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+PROJ_DIR = Path(__file__).resolve().parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 dotenv_file = os.path.join(BASE_DIR, ".env")
+dotenv.load_dotenv(dotenv_file)
+dotenv_file = os.path.join(PROJ_DIR, ".env")
 dotenv.load_dotenv(dotenv_file)
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -29,21 +31,21 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'drf_spectacular',
-    'corsheaders',
-    'api',
+    'rest_framework',  # REST Frameworkの設定
+    'drf_spectacular',  # Swaggerの設定
+    'corsheaders',  # CORSの設定
+    'api',  # アプリケーションの追加
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # CORSの設定
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # CSRFの設定
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -146,12 +148,15 @@ AUTH_USER_MODEL = 'api.User'
 # TODO: すべてのホストからのアクセスを許可。本番環境では変更する
 ALLOWED_HOSTS = ['*']
 
-# TODO: Docker環境では変更する必要あり。
-LOCAL_FRONTEND_URL = f'http://localhost:{os.environ.get("FRONTEND_PORT")}'
-LOCAL_BACKEND_URL = f'http://localhost:{os.environ.get("BACKEND_PORT")}'
+LOCAL_FRONTEND_URL = f'http://localhost:{os.environ.get("LOCAL_FRONTEND_PORT")}'
+LOCAL_BACKEND_URL = f'http://localhost:{os.environ.get("LOCAL_BACKEND_PORT")}'
+CONTAINER_FRONTEND_URL = f'http://localhost:{os.environ.get("CONTAINER_FRONTEND_PORT")}'
+CONTAINER_BACKEND_URL = f'http://localhost:{os.environ.get("CONTAINER_BACKEND_PORT")}'
 CSRF_TRUSTED_ORIGINS = [
     LOCAL_FRONTEND_URL,
     LOCAL_BACKEND_URL,
+    CONTAINER_FRONTEND_URL,
+    CONTAINER_BACKEND_URL,
 ]
 
 # ===== sessionの設定 =====
@@ -167,4 +172,6 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ORIGIN_WHITELIST = [
     LOCAL_BACKEND_URL,
     LOCAL_FRONTEND_URL,
+    CONTAINER_FRONTEND_URL,
+    CONTAINER_BACKEND_URL,
 ]

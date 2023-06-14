@@ -1,17 +1,30 @@
 import { useRouter } from "next/router";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 
-import { UserContext } from "../../../utils/Context";
 
 const useRequireLogin = () => {
   const router = useRouter();
-  const { user } = useContext(UserContext);
 
   useEffect(() => {
-    if (!user) {
+    const sessionId = getCookie("sessionid");
+
+    if (!sessionId) {
       router.push("/login", "/login", { shallow: false });
     }
-  }, [user, router]);
+  }, [router]);
+
+  // クッキーから指定された名前の値を取得する関数の実装例
+  const getCookie = (name) => {
+    const cookies = document.cookie.split(";")
+      .map(cookie => cookie.trim())
+      .reduce((acc, cookie) => {
+        const [cookieName, cookieValue] = cookie.split("=");
+        acc[cookieName] = cookieValue;
+        return acc;
+      }, {});
+
+    return cookies[name];
+  };
 };
 
 export default useRequireLogin;
