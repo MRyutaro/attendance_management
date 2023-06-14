@@ -1,4 +1,5 @@
 import axios from "axios";
+import Cookies from 'js-cookie';
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -19,10 +20,14 @@ const Login = () => {
       );
       console.log(response);
 
+      const cookie = response.headers['set-cookie'];
+
+      // クッキーをクライアントのクッキーに保存
+      Cookies.set('sessionid', cookie, { expires: 7, secure: true });
+
       // レスポンスのステータスが200の場合は成功
       if (response.status === 200) {
-        alert("ログインが完了しました！");
-        // /に遷移
+        // /indexに遷移
         router.push("/", "/");
       }
       else {
