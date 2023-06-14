@@ -1,40 +1,27 @@
 version: "3"
 
 services:
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${LOCAL_BACKEND_PORT}:${CONTAINER_BACKEND_PORT}"
+    volumes:
+      - ./backend:/usr/src
+    env_file:
+      - ./backend/.env
+    command: python manage.py runserver ${CONTAINER_BACKEND_IP}:${CONTAINER_BACKEND_PORT}
   frontend:
     container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${LOCAL_FRONTEND_PORT}:${CONTAINER_FRONTEND_PORT}"
     volumes:
       - ./frontend:/usr/src
     depends_on:
-      - api
+      - backend
     command: npm run dev
-  api:
-    container_name: api
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/usr/src
-    env_file:
-      - ./backend/db.env
-    depends_on:
-      - db
-    command: python api.py
-  db:
-    container_name: db
-    image: postgres:15.2
-    ports:
-      - "5432:5432"
-    env_file:
-      - ./backend/db.env
-    environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: postgres
-      POSTGRES_DB: postgres

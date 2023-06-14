@@ -1,28 +1,12 @@
+# db
+
+*.sqlite3
+
 # env
-db.env
 
-# venv
-venv/
+*.env
 
-# python cache
+# cache
+
+*/__pycache__/*
 *.pyc
-__pycache__/
-
-# ??
-instance/
-
-# test
-.pytest_cache/
-.coverage
-htmlcov/
-
-# build
-dist/
-build/
-*.egg-info/
-
-# dev
-*.swo
-*.swp
-.DS_Store
-set_env_vars.sh

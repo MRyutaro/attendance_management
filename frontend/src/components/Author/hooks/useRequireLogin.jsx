@@ -1,17 +1,35 @@
 import { useRouter } from "next/router";
-import { useContext, useEffect } from "react";
+import { useEffect, useState} from "react";
 
-import { UserContext } from "../../../utils/Context";
+
+// これはフックの外部で定義されているため、再利用可能です。
+const getCookie = (name) => {
+  const cookies = document.cookie.split(";")
+    .map(cookie => cookie.trim())
+    .reduce((acc, cookie) => {
+      const [cookieName, cookieValue] = cookie.split("=");
+      acc[cookieName] = cookieValue;
+      return acc;
+    }, {});
+
+  return cookies[name];
+};
 
 const useRequireLogin = () => {
   const router = useRouter();
-  const { user } = useContext(UserContext);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
+    const sessionId = getCookie("sessionid");
+
+    if (!sessionId) {
       router.push("/login", "/login", { shallow: false });
+    } else {
+      setIsLoading(false);
     }
-  }, [user, router]);
+  }, [router]);
+
+  return isLoading;
 };
 
 export default useRequireLogin;

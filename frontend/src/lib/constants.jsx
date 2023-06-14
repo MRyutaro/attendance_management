@@ -1,7 +1,7 @@
 
 
 export const siteMeta = {
-  siteTitle: 'On Time',
+  siteTitle: 'Wakreate勤怠',
   siteIcon: '/favicon.png'
 }
 
