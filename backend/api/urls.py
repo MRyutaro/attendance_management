@@ -1,5 +1,5 @@
-from api.views import (CompanyCreateAPIView, CompanyUpdateAPIView,
-                       UserCreateAPIView, UserLoginAPIView, UserLogoutAPIView)
+from api.views import (CompanyInviteAPIView, CompanyJoinAPIView,
+                       UserLoginAPIView, UserLogoutAPIView, UserSignupAPIView)
 from django.urls import path
 from django.views.generic import RedirectView
 from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
@@ -18,9 +18,9 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path('companies/signup/', CompanyCreateAPIView.as_view(), name='company_signup'),
-    path('companies/update/', CompanyUpdateAPIView.as_view(), name='company_update'),
-    path('users/signup/', UserCreateAPIView.as_view(), name='user_signup'),
+    path('users/signup/', UserSignupAPIView.as_view(), name='user_signup'),
     path('users/login/', UserLoginAPIView.as_view(), name='user_login'),
     path('users/logout/', UserLogoutAPIView.as_view(), name='user_logout'),
+    path('company/users/invite/', CompanyInviteAPIView.as_view(), name='company_invite'),
+    path('company/users/join/<str:token>/', CompanyJoinAPIView.as_view(), name='company_join'),
 ]

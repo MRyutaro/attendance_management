@@ -1,3 +1,4 @@
+from typing import Any
 from django.apps import apps
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
@@ -7,6 +8,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+# timezoneを追加
+from django.utils import timezone
 
 
 class TimeStampedModel(models.Model):
@@ -14,14 +17,18 @@ class TimeStampedModel(models.Model):
     作成日時と更新日時を管理する抽象モデル
     他のモデルに継承させることで、作成日時と更新日時を自動的に管理することができる
     """
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # timezoneはsettings.pyの設定に合わせる
+    # TODO: timezoneの設定が反映されないらしい。
+    # -> https://docs.djangoproject.com/en/4.2/ref/models/fields/#:~:text=The%20auto_now%20and,at%20display%20time.
+    created_at = models.DateTimeField(_('作成日時'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('更新日時'), default=timezone.now)
 
     class Meta:
         abstract = True
 
 
 class UserManager(BaseUserManager):
+    # TODO: /adminから追加したらパスワードがハッシュ化されない
     def _create_user(self, email, password, username, **extra_fields):
         if not email:
             raise ValueError("The given email must be set")
@@ -73,22 +80,6 @@ class User(AbstractUser, TimeStampedModel):
         ),
         validators=[username_validator],
     )
-    # owner, manager, employeeの3種類
-    role = models.CharField(
-        max_length=10,
-        choices=[
-            ('owner', _('オーナー')),
-            ('manager', _('マネージャー')),
-            ('employee', _('従業員')),
-        ],
-        default='employee',
-        help_text=_(
-            'ユーザーの権限を設定します。\
-            ownerは全ての権限を持ちます。\
-            managerは従業員の管理ができます。\
-            employeeは従業員の勤怠を入力できます。'
-        ),
-    )
     date_joined = None
 
     # emailアドレスをユーザー名として使用する
@@ -113,11 +104,44 @@ class Company(TimeStampedModel, models.Model):
         verbose_name = _("会社")
         verbose_name_plural = _("会社")
 
+    def __str__(self):
+        # /adminで会社名が表示されるようにする
+        return self.name
+
+
+class Role(models.Model):
+    # owner, manager, employeeの3種類
+    # 自動生成する
+    ROLE = [
+        ('owner', _('オーナー')),
+        ('manager', _('マネージャー')),
+        ('employee', _('従業員')),
+    ]
+    role = models.CharField(
+        max_length=10,
+        choices=ROLE,
+        default='employee',
+        help_text=_(
+            'ユーザーの権限を設定します。\
+            ownerは全ての権限を持ちます。\
+            managerは従業員の管理ができます。\
+            employeeは従業員の勤怠を入力できます。'
+        ),
+        unique=True
+    )
+
+    class Meta:
+        verbose_name = _("権限")
+        verbose_name_plural = _("権限")
+
+    def __str__(self):
+        return self.role
+
 
 class Belonging(TimeStampedModel, models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    is_admin = models.BooleanField(default=False)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _("所属")
@@ -125,6 +149,10 @@ class Belonging(TimeStampedModel, models.Model):
         constraints = [
             models.UniqueConstraint(fields=['user', 'company'], name='unique_user_company')
         ]
+
+    def __str__(self):
+        # /adminで会社名が表示されるようにする
+        return _('ユーザ: ') + self.user.email + _(', 所属: ') + self.company.name
 
 
 # 誰が誰を招待したかを管理する
@@ -138,28 +166,42 @@ class Invitation(TimeStampedModel, models.Model):
     # TODO: これをもとに招待用のURLを作成する
     # TODO: 招待された人がもし会員登録していなかったら、会員登録画面に飛ばす
     invitee_email = models.CharField(max_length=30)
+    invitee_role = models.ForeignKey(
+        Role, on_delete=models.CASCADE,
+        related_name=_('招待された人の権限'),
+        help_text=_('招待された人の権限です。')
+    )
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     token = models.CharField(max_length=30, unique=True)
     # tokenの有効期限は1日
     EXPIRIATION_DAYS = 1
-    expiration_date = models.DateTimeField(
+    expiration_time = models.DateTimeField(
         default=timezone.now() + timezone.timedelta(days=EXPIRIATION_DAYS),
         help_text=_('招待URLの有効期限です。デフォルトは1日です。')
     )
 
     def clean(self):
-        if self.expiration_date < timezone.now():
+        if self.expiration_time < timezone.now():
             raise ValidationError(_('招待URLの有効期限が切れています。'))
         # 招待した人の会社を取得
         inviter_company = Belonging.objects.get(user=self.inviter).company
         if inviter_company != self.company:
             raise ValidationError(_('招待した人と会社が異なります。'))
-        if self.inviter.role == 'employee':
-            raise ValidationError(_('従業員の権限では招待できません。'))
+        if Belonging.objects.get(user=self.inviter).role == 'employee':
+            raise ValidationError(_('招待する権限がありません。'))
 
     class Meta:
         verbose_name = _("招待")
         verbose_name_plural = _("招待")
+        constraints = [
+            models.UniqueConstraint(
+                fields=['inviter', 'invitee_email', 'invitee_role', 'company'],
+                name='unique_invitation'
+            )
+        ]
+
+    def __str__(self):
+        return self.inviter.email + ' ' + self.invitee_email
 
 
 class WorkRecord(TimeStampedModel, models.Model):

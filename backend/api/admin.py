@@ -1,10 +1,7 @@
 from django.contrib import admin
 
 from .models import (Belonging, Company, Invitation, PaidLeave, PaidLeaveDay,
-                     PaidLeaveRecord, User, WorkRecord)
-
-# TODO: adminにアクセスしたときにも同じsessionが使われるようにする
-# from django.contrib.admin.sites import AdminSite
+                     PaidLeaveRecord, User, WorkRecord, Role)
 
 
 admin.site.register(User)
@@ -15,3 +12,4 @@ admin.site.register(PaidLeaveRecord)
 admin.site.register(PaidLeaveDay)
 admin.site.register(Belonging)
 admin.site.register(Invitation)
+admin.site.register(Role)
